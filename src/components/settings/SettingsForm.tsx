@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -17,8 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {createClient} from "@/lib/supabase/client";
-import { UserSettings } from "@/types/settings";
+import { createClient } from "@/lib/supabase/client";
 
 const formSchema = z
   .object({
@@ -34,11 +33,12 @@ const formSchema = z
     {
       message: "打卡时间段至少需要1小时",
       path: ["checkin_end_time"],
-    },
+    }
   );
 
-export function SettingsForm({ initialData }: { initialData?: UserSettings }) {
+export function SettingsForm() {
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
@@ -46,26 +46,54 @@ export function SettingsForm({ initialData }: { initialData?: UserSettings }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      checkin_start_time: initialData?.checkin_start_time || "05:00",
-      checkin_end_time: initialData?.checkin_end_time || "06:00",
+      checkin_start_time: "05:00",
+      checkin_end_time: "06:00",
     },
   });
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const { data: settings, error } = await supabase
+          .from("user_settings")
+          .select("*")
+          .single();
+
+        if (error) {
+          console.error("Error loading settings:", error);
+          return;
+        }
+
+        if (settings) {
+          form.reset({
+            checkin_start_time: settings.checkin_start_time,
+            checkin_end_time: settings.checkin_end_time,
+          });
+        }
+      } catch (error) {
+        console.error("Error loading settings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, [form, supabase]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      // 获取用户当前时区
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
       const { error } = await supabase.from("user_settings").upsert(
         {
           checkin_start_time: values.checkin_start_time,
           checkin_end_time: values.checkin_end_time,
-          timezone: userTimezone, // 自动设置用户时区
+          timezone: userTimezone,
         },
         {
           onConflict: "user_id",
-        },
+        }
       );
 
       if (error) throw error;
@@ -86,6 +114,16 @@ export function SettingsForm({ initialData }: { initialData?: UserSettings }) {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div>加载中...</div>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -124,7 +162,6 @@ export function SettingsForm({ initialData }: { initialData?: UserSettings }) {
               )}
             />
 
-            {/* 显示当前时区信息 */}
             <div className="text-sm text-muted-foreground">
               当前时区: {Intl.DateTimeFormat().resolvedOptions().timeZone}
             </div>
