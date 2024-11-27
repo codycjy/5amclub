@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import supabase from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 // Define the form schema type
 const formSchema = z.object({
@@ -32,6 +32,7 @@ export function SignInForm() {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -48,6 +49,9 @@ export function SignInForm() {
         const { error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
+          options: {
+            emailRedirectTo: `${location.origin}/auth/callback`,
+          },
         });
         if (error) throw error;
         toast({
@@ -86,6 +90,7 @@ export function SignInForm() {
 
   return (
     <div className="space-y-6">
+      {/* 表单UI部分保持不变 */}
       <div className="flex justify-center gap-4">
         <Button
           type="button"

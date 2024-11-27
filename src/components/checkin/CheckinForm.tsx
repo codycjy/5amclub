@@ -17,7 +17,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import supabase from "@/lib/supabase/client";
+import {createClient} from "@/lib/supabase/client";
 
 const formSchema = z.object({
   mood: z.string().min(1, "请选择心情"),
@@ -28,6 +28,7 @@ export function CheckinForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

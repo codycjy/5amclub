@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import supabase from "@/lib/supabase/client";
+import {createClient} from "@/lib/supabase/client";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -22,6 +22,7 @@ export function CheckinCalendar() {
     longest_streak: 0,
     total_checkins: 0,
   });
+  const supabase = createClient();
 
   useEffect(() => {
     async function fetchData() {

@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import supabase from "@/lib/supabase/client";
+import {createClient} from "@/lib/supabase/client";
 import { UserSettings } from "@/types/settings";
 
 const formSchema = z
@@ -41,6 +41,7 @@ export function SettingsForm({ initialData }: { initialData?: UserSettings }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
