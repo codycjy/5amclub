@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import {createClient} from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -13,6 +13,14 @@ type StreakInfo = {
   longest_streak: number;
   total_checkins: number;
 };
+
+// 辅助函数：转换UTC日期到本地日期字符串
+function toLocalDateString(utcDate: string): string {
+  const date = new Date(utcDate);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .split("T")[0];
+}
 
 export function CheckinCalendar() {
   const [value, setValue] = useState<Value>(new Date());
@@ -36,14 +44,16 @@ export function CheckinCalendar() {
         return;
       }
 
-      const dates = checkinData.map(
-        (checkin) => new Date(checkin.created_at).toISOString().split("T")[0],
+      // 将UTC时间转换为本地日期
+      const dates = checkinData.map((checkin) =>
+        toLocalDateString(checkin.created_at)
       );
       setCheckinDates(dates);
 
       // 获取连续打卡信息
-      const { data: streakData, error: streakError } =
-        await supabase.rpc("get_streak_info");
+      const { data: streakData, error: streakError } = await supabase.rpc(
+        "get_streak_info"
+      );
 
       if (streakError) {
         console.error("Error fetching streak info:", streakError);
@@ -86,7 +96,8 @@ export function CheckinCalendar() {
         onChange={setValue}
         value={value}
         tileClassName={({ date }) => {
-          const dateStr = date.toISOString().split("T")[0];
+          // 转换日历日期为本地日期字符串进行比较
+          const dateStr = toLocalDateString(date.toISOString());
           return checkinDates.includes(dateStr) ? "bg-green-200" : null;
         }}
       />
