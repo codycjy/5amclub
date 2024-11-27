@@ -32,7 +32,7 @@ export function Navbar() {
         {/* Logo and Mobile Menu Button */}
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="font-bold text-xl">
-            打卡应用
+        	  5 AM Club
           </Link>
           <Button
             variant="ghost"
