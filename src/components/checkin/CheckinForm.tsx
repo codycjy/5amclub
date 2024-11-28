@@ -103,7 +103,7 @@ export function CheckinForm() {
     }
 
     try {
-      const { error } = await supabase.from("checkins").insert({
+      const { error, status } = await supabase.from("checkins").insert({
         mood: values.mood,
         content: values.content,
         city: city,
@@ -111,14 +111,22 @@ export function CheckinForm() {
         lat: lat,
         lon: lon,
       });
-
-      if (error) throw error;
-
-      toast({
-        title: "打卡成功！",
-        description: "继续保持每天记录的好习惯吧！",
-      });
-
+      if (error) {
+        if (status === 409) {
+          toast({
+            title: "今天已经打过卡了！",
+            description: "明天再来吧！",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "打卡成功！",
+          description: "继续保持每天记录的好习惯吧！",
+        });
+      }
       form.reset();
       router.refresh();
     } catch (error) {
