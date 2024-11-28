@@ -19,18 +19,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 
-// Define types for API responses
-interface IpifyResponse {
+interface IpInfoResponse {
   ip: string;
-}
-
-interface IpApiResponse {
-  query: string;
-  status: "success" | "fail";
-  country?: string;
-  city?: string;
-  lat?: number;
-  lon?: number;
+  hostname: string;
+  city: string;
+  region: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  org: string;
+  postal: string;
+  timezone: string;
+  readme: string;
 }
 
 const formSchema = z.object({
@@ -52,9 +52,13 @@ export function CheckinForm() {
     },
   });
 
-  const fetchWithTimeout = async (url: string, timeout: number): Promise<Response> => {
+  const fetchWithTimeout = async (
+    url: string,
+    timeout: number,
+    headers: HeadersInit = {}
+  ): Promise<Response> => {
     const controller = new AbortController();
-    const promise = fetch(url, { signal: controller.signal });
+    const promise = fetch(url, { signal: controller.signal, headers: headers });
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     try {
       const response = await promise;
@@ -68,23 +72,31 @@ export function CheckinForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
-    let city = "", country = "", lat: number | null = null, lon: number | null = null;
-    
+    let city = "",
+      country = "",
+      lat: number | null = null,
+      lon: number | null = null;
+
     try {
-      // Fetch user's public IP
-      const ipResponse = await fetchWithTimeout("https://api.ipify.org?format=json", 5000);
-      const ipData: IpifyResponse = await ipResponse.json();
-      const ip = ipData.ip;
+      const locationResponse = await fetchWithTimeout(
+        `https://ipapi.co/json/`,
+        5000
+      );
+      const locationData: IpInfoResponse = await locationResponse.json();
 
-      // Fetch location data using the IP
-      const locationResponse = await fetchWithTimeout(`http://ip-api.com/json/${ip}`, 5000);
-      const locationData: IpApiResponse = await locationResponse.json();
-
-      if (locationData.status === "success" && locationData.city && locationData.country && locationData.lat && locationData.lon) {
+      if (
+        locationData.city &&
+        locationData.country &&
+        locationData.longitude &&
+        locationData.latitude
+      ) {
         city = locationData.city;
         country = locationData.country;
-        lat = typeof locationData.lat === "number" ? locationData.lat : null;
-        lon = typeof locationData.lon === "number" ? locationData.lon : null;
+
+        lat = locationData.latitude;
+        lon = locationData.longitude;
+      } else {
+        throw new Error("Missing required location data");
       }
     } catch (error) {
       console.error("Error fetching location data:", error);
