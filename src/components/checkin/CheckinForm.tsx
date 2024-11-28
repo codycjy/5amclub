@@ -17,15 +17,29 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {createClient} from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
+
+interface IpInfoResponse {
+  ip: string;
+  hostname: string;
+  city: string;
+  region: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  org: string;
+  postal: string;
+  timezone: string;
+  readme: string;
+}
 
 const formSchema = z.object({
   mood: z.string().min(1, "请选择心情"),
-  content: z.string().min(1, "请输入内容").max(500, "内容不能超过500字"),
+  content: z.string().max(500, "内容不能超过500字"),
 });
 
 export function CheckinForm() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
@@ -38,12 +52,64 @@ export function CheckinForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const fetchWithTimeout = async (
+    url: string,
+    timeout: number,
+    headers: HeadersInit = {}
+  ): Promise<Response> => {
+    const controller = new AbortController();
+    const promise = fetch(url, { signal: controller.signal, headers: headers });
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await promise;
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      console.error("Request timed out:", error);
+      throw new Error("Request timed out");
+    }
+  };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
+    let city = "",
+      country = "",
+      lat: number | null = null,
+      lon: number | null = null;
+
+    try {
+      const locationResponse = await fetchWithTimeout(
+        `https://ipapi.co/json/`,
+        5000
+      );
+      const locationData: IpInfoResponse = await locationResponse.json();
+
+      if (
+        locationData.city &&
+        locationData.country &&
+        locationData.longitude &&
+        locationData.latitude
+      ) {
+        city = locationData.city;
+        country = locationData.country;
+
+        lat = locationData.latitude;
+        lon = locationData.longitude;
+      } else {
+        throw new Error("Missing required location data");
+      }
+    } catch (error) {
+      console.error("Error fetching location data:", error);
+    }
+
     try {
       const { error } = await supabase.from("checkins").insert({
         mood: values.mood,
         content: values.content,
+        city: city,
+        country: country,
+        lat: lat,
+        lon: lon,
       });
 
       if (error) throw error;
@@ -65,7 +131,7 @@ export function CheckinForm() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const moods = ["😊 开心", "😐 一般", "😢 难过", "😡 生气", "🤔 思考"];
 
