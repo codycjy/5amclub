@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {createClient} from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 interface Checkin {
   id: number;
@@ -69,7 +69,7 @@ export function CheckinList() {
 
   useEffect(() => {
     Promise.all([fetchUserSettings(), fetchCheckins()]);
-  }, []);
+  });
 
   if (loading) {
     return <div>加载中...</div>;

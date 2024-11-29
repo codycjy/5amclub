@@ -4,8 +4,9 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Home, Settings, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 const routes = [
   {
@@ -25,6 +26,32 @@ const routes = [
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [username, setUsername] = useState<string>("");
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function getUsername() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: settings } = await supabase
+          .from("user_settings")
+          .select("username")
+          .eq("user_id", user.id)
+          .single();
+
+        if (settings?.username) {
+          setUsername(settings.username);
+        } else {
+          setUsername(user.email?.split("@")[0] || "");
+        }
+      }
+    }
+
+    getUsername();
+  });
 
   return (
     <div className="fixed z-50 w-full bg-white border-b border-gray-200">
@@ -32,7 +59,7 @@ export function Navbar() {
         {/* Logo and Mobile Menu Button */}
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="font-bold text-xl">
-        	  5 AM Club
+            5 AM Club
           </Link>
           <Button
             variant="ghost"
@@ -54,7 +81,7 @@ export function Navbar() {
                 "text-sm font-medium transition-colors hover:text-primary",
                 pathname === route.href
                   ? "text-black dark:text-white"
-                  : "text-muted-foreground",
+                  : "text-muted-foreground"
               )}
             >
               <div className="flex items-center gap-x-2">
@@ -63,6 +90,11 @@ export function Navbar() {
               </div>
             </Link>
           ))}
+          {username && (
+            <div className="text-sm font-medium text-muted-foreground">
+              {username}
+            </div>
+          )}
         </nav>
 
         {/* Mobile Navigation */}
@@ -76,7 +108,7 @@ export function Navbar() {
                   "flex items-center w-full p-3 text-sm font-medium transition-colors hover:text-primary rounded-lg",
                   pathname === route.href
                     ? "bg-gray-100 text-black"
-                    : "text-muted-foreground",
+                    : "text-muted-foreground"
                 )}
                 onClick={() => setIsOpen(false)}
               >
@@ -84,6 +116,11 @@ export function Navbar() {
                 {route.label}
               </Link>
             ))}
+            {username && (
+              <div className="p-3 text-sm font-medium text-muted-foreground">
+                {username}
+              </div>
+            )}
           </nav>
         )}
       </div>
