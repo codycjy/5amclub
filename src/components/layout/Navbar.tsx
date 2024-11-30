@@ -45,7 +45,7 @@ export function Navbar() {
         if (settings?.username) {
           setUsername(settings.username);
         } else {
-          setUsername(user.email?.split("@")[0] || "");
+          setUsername(user.email || "");
         }
       }
     }
