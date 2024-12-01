@@ -3,68 +3,18 @@
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { createClient } from "@/lib/supabase/client";
+import { useCheckins } from "@/contexts/CheckinContext";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-type StreakInfo = {
-  current_streak: number;
-  longest_streak: number;
-  total_checkins: number;
-};
-
-// 辅助函数：转换UTC日期到本地日期字符串
-function toLocalDateString(utcDate: string): string {
-  const date = new Date(utcDate);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .split("T")[0];
-}
-
 export function CheckinCalendar() {
   const [value, setValue] = useState<Value>(new Date());
-  const [checkinDates, setCheckinDates] = useState<string[]>([]);
-  const [streakInfo, setStreakInfo] = useState<StreakInfo>({
-    current_streak: 0,
-    longest_streak: 0,
-    total_checkins: 0,
-  });
-  const supabase = createClient();
+  const { checkinDates, streakInfo, refreshCalendarData } = useCheckins();
 
   useEffect(() => {
-    async function fetchData() {
-      // 获取打卡记录
-      const { data: checkinData, error: checkinError } = await supabase
-        .from("checkins")
-        .select("created_at");
-
-      if (checkinError) {
-        console.error("Error fetching checkins:", checkinError);
-        return;
-      }
-
-      // 将UTC时间转换为本地日期
-      const dates = checkinData.map((checkin) =>
-        toLocalDateString(checkin.created_at)
-      );
-      setCheckinDates(dates);
-
-      // 获取连续打卡信息
-      const { data: streakData, error: streakError } = await supabase.rpc(
-        "get_streak_info"
-      );
-
-      if (streakError) {
-        console.error("Error fetching streak info:", streakError);
-        return;
-      }
-
-      setStreakInfo(streakData[0]);
-    }
-
-    fetchData();
-  }, []);
+    refreshCalendarData();
+  }, [refreshCalendarData]);
 
   return (
     <div className="p-4 bg-white rounded-lg shadow">
@@ -96,8 +46,11 @@ export function CheckinCalendar() {
         onChange={setValue}
         value={value}
         tileClassName={({ date }) => {
-          // 转换日历日期为本地日期字符串进行比较
-          const dateStr = toLocalDateString(date.toISOString());
+          const dateStr = new Date(
+            date.getTime() - date.getTimezoneOffset() * 60000
+          )
+            .toISOString()
+            .split("T")[0];
           return checkinDates.includes(dateStr) ? "bg-green-200" : null;
         }}
       />

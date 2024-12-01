@@ -3,22 +3,23 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
-
-interface Checkin {
-  id: number;
-  created_at: string;
-  created_date: string;
-  mood: string;
-  content: string;
-  user_id: string;
-  updated_at: string;
-}
+import { useCheckins } from "@/contexts/CheckinContext";
 
 export function CheckinList() {
-  const [checkins, setCheckins] = useState<Checkin[]>([]);
+  const { checkins, refreshCheckins } = useCheckins();
   const [userTimezone, setUserTimezone] = useState<string>("UTC");
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+
+  useEffect(() => {
+    const initData = async () => {
+      setLoading(true);
+      await Promise.all([fetchUserSettings(), refreshCheckins()]);
+      setLoading(false);
+    };
+
+    initData();
+  }, []);
 
   const fetchUserSettings = async () => {
     try {
@@ -28,9 +29,10 @@ export function CheckinList() {
         .single();
 
       if (error) throw error;
-      setUserTimezone(data.timezone);
+      setUserTimezone(data?.timezone || "UTC");
     } catch (error) {
       console.error("Error fetching user settings:", error);
+      setUserTimezone("UTC");
     }
   };
 
@@ -49,27 +51,6 @@ export function CheckinList() {
       return dateStr;
     }
   };
-
-  const fetchCheckins = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("checkins")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
-      setCheckins(data);
-    } catch (error) {
-      console.error("Error fetching checkins:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    Promise.all([fetchUserSettings(), fetchCheckins()]);
-  },[]);
 
   if (loading) {
     return <div>加载中...</div>;

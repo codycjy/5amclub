@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { useCheckins } from "@/contexts/CheckinContext";
 
 interface IpInfoResponse {
   ip: string;
@@ -44,6 +45,7 @@ export function CheckinForm() {
   const { toast } = useToast();
   const supabase = createClient();
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { refreshCheckins, refreshCalendarData } = useCheckins();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -139,6 +141,8 @@ export function CheckinForm() {
           title: "打卡成功！",
           description: "继续保持每天记录的好习惯吧！",
         });
+        await refreshCheckins();
+        await refreshCalendarData();
       }
       form.reset();
       router.refresh();
