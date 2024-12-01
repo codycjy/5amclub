@@ -1,4 +1,5 @@
-# 5AM Daily Check-in App
+# 5 AM Club App
+Try it at [5 AM Club](https://5amclub.life)!   
 A simple daily check-in application built with Next.js and Supabase, inspired by "The 5 AM Club". Track your morning wake-up consistency and build a powerful morning routine.
 
 ## Features
