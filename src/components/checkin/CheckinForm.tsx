@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { useCheckins } from "@/contexts/CheckinContext";
 
 interface IpInfoResponse {
   ip: string;
@@ -43,6 +44,8 @@ export function CheckinForm() {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { refreshCheckins, refreshCalendarData } = useCheckins();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,6 +81,18 @@ export function CheckinForm() {
       lon: number | null = null;
 
     try {
+      // First, update user settings with timezone if needed
+      const { data: settings } = await supabase
+        .from("user_settings")
+        .select("timezone")
+        .single();
+
+      if (!settings || settings.timezone !== userTimezone) {
+        await supabase
+          .from("user_settings")
+          .upsert({ timezone: userTimezone }, { onConflict: "user_id" });
+      }
+
       const locationResponse = await fetchWithTimeout(
         `https://ipapi.co/json/`,
         5000
@@ -92,7 +107,6 @@ export function CheckinForm() {
       ) {
         city = locationData.city;
         country = locationData.country;
-
         lat = locationData.latitude;
         lon = locationData.longitude;
       } else {
@@ -103,7 +117,7 @@ export function CheckinForm() {
     }
 
     try {
-      const { error } = await supabase.from("checkins").insert({
+      const { error, status } = await supabase.from("checkins").insert({
         mood: values.mood,
         content: values.content,
         city: city,
@@ -112,13 +126,24 @@ export function CheckinForm() {
         lon: lon,
       });
 
-      if (error) throw error;
-
-      toast({
-        title: "打卡成功！",
-        description: "继续保持每天记录的好习惯吧！",
-      });
-
+      if (error) {
+        if (status === 409) {
+          toast({
+            title: "今天已经打过卡了！",
+            description: "明天再来吧！",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "打卡成功！",
+          description: "继续保持每天记录的好习惯吧！",
+        });
+        await refreshCheckins();
+        await refreshCalendarData();
+      }
       form.reset();
       router.refresh();
     } catch (error) {
