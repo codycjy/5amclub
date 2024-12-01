@@ -43,6 +43,7 @@ export function CheckinForm() {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,6 +79,18 @@ export function CheckinForm() {
       lon: number | null = null;
 
     try {
+      // First, update user settings with timezone if needed
+      const { data: settings } = await supabase
+        .from("user_settings")
+        .select("timezone")
+        .single();
+
+      if (!settings || settings.timezone !== userTimezone) {
+        await supabase
+          .from("user_settings")
+          .upsert({ timezone: userTimezone }, { onConflict: "user_id" });
+      }
+
       const locationResponse = await fetchWithTimeout(
         `https://ipapi.co/json/`,
         5000
@@ -92,7 +105,6 @@ export function CheckinForm() {
       ) {
         city = locationData.city;
         country = locationData.country;
-
         lat = locationData.latitude;
         lon = locationData.longitude;
       } else {
@@ -111,6 +123,7 @@ export function CheckinForm() {
         lat: lat,
         lon: lon,
       });
+
       if (error) {
         if (status === 409) {
           toast({
