@@ -69,7 +69,7 @@ export function CheckinList() {
 
   useEffect(() => {
     Promise.all([fetchUserSettings(), fetchCheckins()]);
-  });
+  },[]);
 
   if (loading) {
     return <div>加载中...</div>;
