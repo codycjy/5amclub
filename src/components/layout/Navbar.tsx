@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { Avatar as AvatarUI, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar as AvatarUI,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
 
 const routes = [
   {
@@ -29,6 +33,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const supabase = createClient();
 
   const getUserInfo = async () => {
@@ -50,40 +55,51 @@ export function Navbar() {
       }
 
       if (settings?.avatar_url) {
-        const { data } = await supabase.storage
-          .from('avatars')
-          .createSignedUrl(settings.avatar_url, 3600);
-          
-        if (data) {
-          setAvatarUrl(data.signedUrl);
-        }
+        setAvatarPath(settings.avatar_url);
       }
     } else {
-      // 用户未登录时清空状态
       setUsername("");
+      setAvatarPath(null);
       setAvatarUrl(null);
     }
   };
 
+  // 只在 avatarPath 改变时获取签名 URL
+  useEffect(() => {
+    const getSignedUrl = async () => {
+      if (avatarPath) {
+        const { data } = await supabase.storage
+          .from("avatars")
+          .createSignedUrl(avatarPath, 3600);
+
+        if (data) {
+          setAvatarUrl(data.signedUrl);
+        }
+      }
+    };
+
+    getSignedUrl();
+  }, [avatarPath]);
+
   useEffect(() => {
     getUserInfo();
 
-    // 监听认证状态变化
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
         getUserInfo();
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === "SIGNED_OUT") {
         setUsername("");
+        setAvatarPath(null);
         setAvatarUrl(null);
       }
     });
 
-    // 清理订阅
     return () => {
       subscription.unsubscribe();
     };
   }, []);
-
 
   const UserInfo = () => (
     <div className="flex items-center gap-3">
