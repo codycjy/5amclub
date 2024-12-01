@@ -31,39 +31,59 @@ export function Navbar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    async function getUserInfo() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const getUserInfo = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-      if (user) {
-        const { data: settings } = await supabase
-          .from("user_settings")
-          .select("username, avatar_url")
-          .eq("user_id", user.id)
-          .single();
+    if (user) {
+      const { data: settings } = await supabase
+        .from("user_settings")
+        .select("username, avatar_url")
+        .eq("user_id", user.id)
+        .single();
 
-        if (settings?.username) {
-          setUsername(settings.username);
-        } else {
-          setUsername(user.email || "");
-        }
+      if (settings?.username) {
+        setUsername(settings.username);
+      } else {
+        setUsername(user.email || "");
+      }
 
-        if (settings?.avatar_url) {
-          const { data } = await supabase.storage
-            .from('avatars')
-            .createSignedUrl(settings.avatar_url, 3600);
-            
-          if (data) {
-            setAvatarUrl(data.signedUrl);
-          }
+      if (settings?.avatar_url) {
+        const { data } = await supabase.storage
+          .from('avatars')
+          .createSignedUrl(settings.avatar_url, 3600);
+          
+        if (data) {
+          setAvatarUrl(data.signedUrl);
         }
       }
+    } else {
+      // 用户未登录时清空状态
+      setUsername("");
+      setAvatarUrl(null);
     }
+  };
 
+  useEffect(() => {
     getUserInfo();
+
+    // 监听认证状态变化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        getUserInfo();
+      } else if (event === 'SIGNED_OUT') {
+        setUsername("");
+        setAvatarUrl(null);
+      }
+    });
+
+    // 清理订阅
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
 
   const UserInfo = () => (
     <div className="flex items-center gap-3">
