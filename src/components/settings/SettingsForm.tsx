@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { Avatar } from "@/components/avatar/Avatar";
 
 const formSchema = z
   .object({
@@ -29,12 +30,13 @@ const formSchema = z
       .regex(/^[a-zA-Z0-9_-]+$/, "用户名只能包含字母、数字、下划线和横线"),
     checkin_start_time: z.string(),
     checkin_end_time: z.string(),
+    avatar_url: z.string().optional(),
   })
   .refine(
     (data) => {
       const start = new Date(`2000-01-01T${data.checkin_start_time}`);
       const end = new Date(`2000-01-01T${data.checkin_end_time}`);
-      return end.getTime() - start.getTime() >= 3600000; // 至少1小时
+      return end.getTime() - start.getTime() >= 3600000;
     },
     {
       message: "打卡时间段至少需要1小时",
@@ -42,27 +44,30 @@ const formSchema = z
     }
   );
 
+type FormValues = z.infer<typeof formSchema>;
+
 export function SettingsForm() {
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
       checkin_start_time: "05:00",
       checkin_end_time: "06:00",
+      avatar_url: undefined,
     },
   });
 
   useEffect(() => {
     async function loadSettings() {
       try {
-        // 获取当前用户信息
         const {
           data: { user },
           error: userError,
@@ -79,31 +84,56 @@ export function SettingsForm() {
           .single();
 
         if (error) {
-          console.error("Error loading settings:", error);
+          if (error.code !== "PGRST116") {
+            console.error("Error loading settings:", error);
+          }
           return;
         }
 
         if (settings) {
+          // 如果有头像，获取签名URL
+          if (settings.avatar_url) {
+            const { data, error } = await supabase.storage
+              .from("avatars")
+              .createSignedUrl(settings.avatar_url, 3600);
+
+            if (!error && data) {
+              console.log(data.signedUrl);
+              setAvatarUrl(data.signedUrl);
+            }
+          }
+
           form.reset({
             username: settings.username || "",
             checkin_start_time: settings.checkin_start_time,
             checkin_end_time: settings.checkin_end_time,
+            avatar_url: settings.avatar_url,
           });
         }
       } catch (error) {
         console.error("Error loading settings:", error);
+        toast({
+          title: "加载设置失败",
+          description: "请刷新页面重试",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     }
 
     loadSettings();
-  }, [form, supabase]);
+  }, [form, supabase, toast]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: FormValues) {
     setLoading(true);
     try {
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("未找到用户");
 
       // 检查用户名是否已存在
       if (values.username) {
@@ -111,9 +141,10 @@ export function SettingsForm() {
           .from("user_settings")
           .select("username")
           .eq("username", values.username)
+          .neq("user_id", user.id)
           .single();
 
-        if (existingUser && !form.getValues("username")) {
+        if (existingUser) {
           toast({
             title: "用户名已存在",
             description: "请选择其他用户名",
@@ -126,10 +157,13 @@ export function SettingsForm() {
 
       const { error } = await supabase.from("user_settings").upsert(
         {
+          user_id: user.id,
           username: values.username,
           checkin_start_time: values.checkin_start_time,
           checkin_end_time: values.checkin_end_time,
           timezone: userTimezone,
+          avatar_url: values.avatar_url,
+          updated_at: new Date().toISOString(),
         },
         {
           onConflict: "user_id",
@@ -139,15 +173,15 @@ export function SettingsForm() {
       if (error) throw error;
 
       toast({
-        title: "设置保存成功！",
+        title: "设置已保存",
         description: "您的个人信息已更新",
-        variant: "default",
       });
+
       router.refresh();
     } catch (error) {
       console.error("Error saving settings:", error);
       toast({
-        title: "保存设置失败",
+        title: "保存失败",
         description: "请稍后重试",
         variant: "destructive",
       });
@@ -174,6 +208,23 @@ export function SettingsForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="flex flex-col items-center gap-4 mb-6">
+              <Avatar
+                url={avatarUrl}
+                onUpload={async (fileName) => {
+                  const { data, error } = await supabase.storage
+                    .from("avatars")
+                    .createSignedUrl(fileName, 3600);
+
+                  if (!error && data) {
+                    setAvatarUrl(data.signedUrl);
+                    form.setValue("avatar_url", fileName);
+                  }
+                }}
+                fallback={userEmail?.[0]?.toUpperCase()}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="username"

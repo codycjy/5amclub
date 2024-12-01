@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { Avatar as AvatarUI, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const routes = [
   {
@@ -27,10 +28,11 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
-    async function getUsername() {
+    async function getUserInfo() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -38,7 +40,7 @@ export function Navbar() {
       if (user) {
         const { data: settings } = await supabase
           .from("user_settings")
-          .select("username")
+          .select("username, avatar_url")
           .eq("user_id", user.id)
           .single();
 
@@ -47,11 +49,33 @@ export function Navbar() {
         } else {
           setUsername(user.email || "");
         }
+
+        if (settings?.avatar_url) {
+          const { data } = await supabase.storage
+            .from('avatars')
+            .createSignedUrl(settings.avatar_url, 3600);
+            
+          if (data) {
+            setAvatarUrl(data.signedUrl);
+          }
+        }
       }
     }
 
-    getUsername();
-  });
+    getUserInfo();
+  }, []);
+
+  const UserInfo = () => (
+    <div className="flex items-center gap-3">
+      <div className="text-sm font-medium text-muted-foreground">
+        {username}
+      </div>
+      <AvatarUI className="h-8 w-8">
+        <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
+        <AvatarFallback>{username?.[0]?.toUpperCase()}</AvatarFallback>
+      </AvatarUI>
+    </div>
+  );
 
   return (
     <div className="fixed z-50 w-full bg-white border-b border-gray-200">
@@ -90,11 +114,7 @@ export function Navbar() {
               </div>
             </Link>
           ))}
-          {username && (
-            <div className="text-sm font-medium text-muted-foreground">
-              {username}
-            </div>
-          )}
+          {username && <UserInfo />}
         </nav>
 
         {/* Mobile Navigation */}
@@ -117,8 +137,8 @@ export function Navbar() {
               </Link>
             ))}
             {username && (
-              <div className="p-3 text-sm font-medium text-muted-foreground">
-                {username}
+              <div className="p-3">
+                <UserInfo />
               </div>
             )}
           </nav>
