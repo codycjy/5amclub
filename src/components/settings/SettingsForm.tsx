@@ -81,6 +81,7 @@ export function SettingsForm() {
         const { data: settings, error } = await supabase
           .from("user_settings")
           .select("*")
+          .eq("user_id", user?.id)
           .single();
 
         if (error) {

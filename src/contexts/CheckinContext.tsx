@@ -63,9 +63,11 @@ export function CheckinProvider({ children }: { children: ReactNode }) {
 
   const refreshCheckins = useCallback(async () => {
     try {
+      const{data:userData} = await supabase.auth.getUser()
       const { data, error } = await supabase
         .from("checkins")
         .select("*")
+        .eq("user_id", userData?.user?.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -79,9 +81,12 @@ export function CheckinProvider({ children }: { children: ReactNode }) {
   const refreshCalendarData = useCallback(async () => {
     try {
       // 获取打卡日期
+      const {data:userData} = await supabase.auth.getUser()
       const { data: checkinData, error: checkinError } = await supabase
         .from("checkins")
-        .select("created_at");
+        .select("created_at")
+        .eq("user_id", userData?.user?.id);
+
 
       if (checkinError) throw checkinError;
       const dates = checkinData.map((checkin) =>

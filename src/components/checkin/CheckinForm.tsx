@@ -81,10 +81,12 @@ export function CheckinForm() {
       lon: number | null = null;
 
     try {
+      const  user= await supabase.auth.getUser();
       // First, update user settings with timezone if needed
       const { data: settings } = await supabase
         .from("user_settings")
         .select("timezone")
+        .eq("user_id",user.data.user?.id) 
         .single();
 
       if (!settings || settings.timezone !== userTimezone) {
