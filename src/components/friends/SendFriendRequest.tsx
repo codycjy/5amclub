@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 
 interface SendFriendRequestProps {
   onRequestSent: () => void;
@@ -18,7 +19,10 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
 
   const handleSendRequest = async () => {
     if (!email) {
-      alert("请输入有效的邮箱地址");
+      toast({
+        title: "请输入有效的用户名",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -27,7 +31,11 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
     // 获取当前用户ID
     const currentUser = (await supabase.auth.getUser()).data.user;
     if (!currentUser) {
-      alert("未登录");
+      toast({
+        title: "未登录",
+        description: "请先登录后再操作",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -41,7 +49,11 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
 
     if (currentUserError || !currentUserData) {
       console.error("Error getting current user:", currentUserError);
-      alert("获取用户信息失败");
+      toast({
+        title: "获取用户信息失败",
+        description: "请稍后重试",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -55,7 +67,11 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
 
     if (userError || !userSettings) {
       console.error("Error finding user:", userError, email);
-      alert("找不到该用户");
+      toast({
+        title: "找不到该用户",
+        description: "请检查用户名是否正确",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
@@ -72,9 +88,16 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
 
     if (error) {
       console.error("Error sending friend request:", error);
-      alert("发送好友请求失败");
+      toast({
+        title: "发送好友请求失败",
+        description: "请稍后重试",
+        variant: "destructive",
+      });
     } else {
-      alert("已发送好友请求");
+      toast({
+        title: "已发送好友请求",
+        variant: "default",
+      });
       setEmail("");
       onRequestSent();
     }

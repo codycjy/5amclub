@@ -23,16 +23,16 @@ const routes = [
     color: "text-sky-500",
   },
   {
-    label: "设置",
-    icon: Settings,
-    href: "/settings",
-    color: "text-violet-500",
-  },
-  {
     label: "好友",
     icon: Users, // 使用 Users 图标
     href: "/friends", // 路由路径
     color: "text-green-500",
+  },
+  {
+    label: "设置",
+    icon: Settings,
+    href: "/settings",
+    color: "text-violet-500",
   },
 ];
 

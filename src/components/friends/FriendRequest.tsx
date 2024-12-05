@@ -7,6 +7,7 @@ import {
   AvatarFallback,
 } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 interface FriendRequestsProps {
   incomingRequests: any[];
@@ -31,8 +32,10 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
       console.error("Error accepting friend request:", error);
       return;
     }
-
-    alert("已接受好友请求");
+    toast({
+      title: "已接受好友请求",
+      variant: "default",
+    });
     onRequestHandled();
   };
 
@@ -49,8 +52,10 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
       console.error("Error rejecting friend request:", error);
       return;
     }
-
-    alert("已拒绝好友请求");
+    toast({
+      title: "已拒绝好友请求",
+      variant: "default",
+    });
     onRequestHandled();
   };
 

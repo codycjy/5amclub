@@ -8,18 +8,21 @@ import {
 } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
 
 interface FriendInfo {
   user_id: string;
   username: string;
   avatar_url?: string;
   signed_avatar_url?: string;
+  current_streak: number;
+  longest_streak: number;
+  total_checkins: number;
 }
 
 interface FriendListProps {
   friends: any[];
 }
-
 export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
   const supabase = createClient();
   const [friendsInfo, setFriendsInfo] = useState<FriendInfo[]>([]);
@@ -37,7 +40,8 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
       return;
     }
 
-    const user = (await supabase.auth.getUser()).data.user;
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
     if (!user) return;
 
     // 获取好友的 user_id
@@ -45,6 +49,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
       friend.user1_id === user.id ? friend.user2_id : friend.user1_id
     );
 
+    // 获取好友的基本信息
     const { data, error } = await supabase
       .from("user_settings")
       .select("user_id, username, avatar_url")
@@ -52,6 +57,17 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
 
     if (error) {
       console.error("Error fetching friends info:", error);
+      return;
+    }
+    // await supabase.rpc("get_user_streak_info",{in_user_id:user.id})
+    // 获取好友的打卡信息
+    const { data: streakData, error: streakError } = await supabase.rpc(
+      "get_all_friend_streak",
+      { in_user_id: user.id }
+    );
+
+    if (streakError) {
+      console.error("Error fetching friends streak info:", streakError);
       return;
     }
 
@@ -62,9 +78,18 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
         if (friend.avatar_url) {
           signed_avatar_url = await getSignedUrl(friend.avatar_url);
         }
+
+        // 查找对应的打卡信息
+        const streakInfo = streakData?.find(
+          (streak: any) => streak.user_id === friend.user_id
+        );
+
         return {
           ...friend,
           signed_avatar_url,
+          current_streak: streakInfo?.current_streak || 0,
+          longest_streak: streakInfo?.longest_streak || 0,
+          total_checkins: streakInfo?.total_checkins || 0,
         };
       })
     );
@@ -77,7 +102,8 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
   }, [friends]);
 
   const handleRemoveFriend = async (friendId: string) => {
-    const user = (await supabase.auth.getUser()).data.user;
+    const { data: userData } = await supabase.auth.getUser();
+    const user = userData?.user;
     if (!user) return;
 
     const { data: friendship, error: friendshipError } = await supabase
@@ -101,7 +127,11 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
       if (deleteError) {
         console.error("Error deleting friend:", deleteError);
       } else {
-        alert("已成功删除好友");
+        toast({
+          title: "好友删除成功",
+          description: "你已经成功删除了一个好友",
+          variant: "default",
+        });
         // 重新获取好友列表
         fetchFriendsInfo();
       }
@@ -130,9 +160,20 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
                     {friend.username?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </AvatarUI>
-                <span className="font-medium">
-                  {friend.username || "未知用户"}
-                </span>
+                <div>
+                  <span className="font-medium">
+                    {friend.username || "未知用户"}
+                  </span>
+                  <div className="text-sm text-gray-600">
+                    当前连续打卡: {friend.current_streak} 天
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    最长连续打卡: {friend.longest_streak} 天
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    总打卡次数: {friend.total_checkins} 次
+                  </div>
+                </div>
               </div>
               <Button
                 variant="destructive"
