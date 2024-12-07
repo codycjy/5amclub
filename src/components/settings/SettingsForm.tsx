@@ -25,12 +25,20 @@ const formSchema = z
   .object({
     username: z
       .string()
-      .min(3, "用户名至少3个字符")
-      .max(20, "用户名最多20个字符")
-      .regex(/^[a-zA-Z0-9_-]+$/, "用户名只能包含字母、数字、下划线和横线"),
+      .transform(str => str === '' ? null : str) // 空字符串转换为 null
+      .nullable()
+      .refine(
+        (val) => {
+          if (val === null) return true; // 如果是 null，则验证通过
+          return val.length >= 3 && val.length <= 20 && /^[a-zA-Z0-9_-]+$/.test(val);
+        },
+        {
+          message: "用户名必须是3-20个字符，只能包含字母、数字、下划线和横线"
+        }
+      ),
     checkin_start_time: z.string(),
     checkin_end_time: z.string(),
-    avatar_url: z.string().optional(),
+    avatar_url: z.string().nullable(),
   })
   .refine(
     (data) => {
@@ -58,10 +66,10 @@ export function SettingsForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      username: null,
       checkin_start_time: "05:00",
       checkin_end_time: "06:00",
-      avatar_url: undefined,
+      avatar_url: null,
     },
   });
 
@@ -81,6 +89,7 @@ export function SettingsForm() {
         const { data: settings, error } = await supabase
           .from("user_settings")
           .select("*")
+          .eq("user_id", user?.id)
           .single();
 
         if (error) {
@@ -91,23 +100,21 @@ export function SettingsForm() {
         }
 
         if (settings) {
-          // 如果有头像，获取签名URL
           if (settings.avatar_url) {
             const { data, error } = await supabase.storage
               .from("avatars")
               .createSignedUrl(settings.avatar_url, 3600);
 
             if (!error && data) {
-              console.log(data.signedUrl);
               setAvatarUrl(data.signedUrl);
             }
           }
 
           form.reset({
-            username: settings.username || "",
+            username: settings.username || null,
             checkin_start_time: settings.checkin_start_time,
             checkin_end_time: settings.checkin_end_time,
-            avatar_url: settings.avatar_url,
+            avatar_url: settings.avatar_url || null,
           });
         }
       } catch (error) {
@@ -135,8 +142,8 @@ export function SettingsForm() {
 
       if (!user) throw new Error("未找到用户");
 
-      // 检查用户名是否已存在
-      if (values.username) {
+      // 只在用户输入了用户名时才检查用户名是否存在
+      if (values.username && values.username.trim() !== '') {
         const { data: existingUser } = await supabase
           .from("user_settings")
           .select("username")
@@ -158,11 +165,11 @@ export function SettingsForm() {
       const { error } = await supabase.from("user_settings").upsert(
         {
           user_id: user.id,
-          username: values.username,
+          username: values.username && values.username.trim() !== '' ? values.username : null,
           checkin_start_time: values.checkin_start_time,
           checkin_end_time: values.checkin_end_time,
           timezone: userTimezone,
-          avatar_url: values.avatar_url,
+          avatar_url: values.avatar_url || null,
           updated_at: new Date().toISOString(),
         },
         {
@@ -223,6 +230,9 @@ export function SettingsForm() {
                 }}
                 fallback={userEmail?.[0]?.toUpperCase()}
               />
+              <FormDescription>
+                头像为可选项，不上传则显示邮箱首字母
+              </FormDescription>
             </div>
 
             <FormField
@@ -230,13 +240,17 @@ export function SettingsForm() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>用户名</FormLabel>
+                  <FormLabel>用户名（可选）</FormLabel>
                   <FormControl>
-                    <Input placeholder="设置你的用户名" {...field} />
+                    <Input 
+                      placeholder="设置你的用户名" 
+                      {...field} 
+                      value={field.value || ''} 
+                    />
                   </FormControl>
                   <FormDescription>
-                    这将是你的唯一标识符。如果未设置，将显示你的邮箱：
-                    {userEmail}
+                    可以设置一个独特的用户名。当前显示为：
+                    {field.value || userEmail}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

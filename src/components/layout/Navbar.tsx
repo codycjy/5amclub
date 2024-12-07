@@ -1,8 +1,10 @@
+// src/components/layout/Navbar.tsx
+
 "use client";
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Settings, Menu, X } from "lucide-react";
+import { Home, Settings, Menu, X, Users } from "lucide-react"; // 添加 Users 图标
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -19,6 +21,12 @@ const routes = [
     icon: Home,
     href: "/",
     color: "text-sky-500",
+  },
+  {
+    label: "好友",
+    icon: Users, // 使用 Users 图标
+    href: "/friends", // 路由路径
+    color: "text-green-500",
   },
   {
     label: "设置",

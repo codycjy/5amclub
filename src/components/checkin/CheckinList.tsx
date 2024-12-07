@@ -23,9 +23,11 @@ export function CheckinList() {
 
   const fetchUserSettings = async () => {
     try {
+      const {data:userData} = await supabase.auth.getUser()
       const { data, error } = await supabase
         .from("user_settings")
         .select("timezone")
+        .eq("user_id", userData?.user?.id)
         .single();
 
       if (error) throw error;
