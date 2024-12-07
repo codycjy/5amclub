@@ -99,36 +99,27 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
     if (!user) return;
-
-    const { data: friendship, error: friendshipError } = await supabase
-      .from("friends")
-      .select("*")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-      .or(`user1_id.eq.${friendId},user2_id.eq.${friendId}`)
-      .maybeSingle();
-
-    if (friendshipError) {
-      console.error("Error fetching friendship:", friendshipError);
-      return;
-    }
-
-    if (friendship) {
-      const { error: deleteError } = await supabase
-        .from("friends")
-        .delete()
-        .eq("id", friendship.id);
-
-      if (deleteError) {
-        console.error("Error deleting friend:", deleteError);
-      } else {
-        toast({
-          title: "好友删除成功",
-          description: "你已经成功删除了一个好友",
-          variant: "default",
-        });
-        // 重新获取好友列表
-        fetchFriendsInfo();
-      }
+  
+    // 调用我们创建的删除好友函数
+    const { error } = await supabase.rpc('delete_friendship', {
+      friend_id: friendId
+    });
+  
+    if (error) {
+      console.error("Error deleting friend:", error);
+      toast({
+        title: "删除失败",
+        description: "删除好友时发生错误",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "好友删除成功",
+        description: "你已经成功删除了这个好友",
+        variant: "default",
+      });
+      // 从当前列表中移除这个好友
+      setFriendsInfo(prev => prev.filter(friend => friend.user_id !== friendId));
     }
   };
 
