@@ -50,17 +50,11 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
     );
 
     // 获取好友的基本信息
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("user_settings")
       .select("user_id, username, avatar_url")
       .in("user_id", friendIds);
 
-    if (error) {
-      console.error("Error fetching friends info:", error);
-      return;
-    }
-    // await supabase.rpc("get_user_streak_info",{in_user_id:user.id})
-    // 获取好友的打卡信息
     const { data: streakData, error: streakError } = await supabase.rpc(
       "get_all_friend_streak",
       { in_user_id: user.id }
