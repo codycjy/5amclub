@@ -1,10 +1,8 @@
-// src/components/layout/Navbar.tsx
-
 "use client";
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Settings, Menu, X, Users } from "lucide-react"; // 添加 Users 图标
+import { Home, Settings, Menu, X, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -17,15 +15,15 @@ import {
 
 const routes = [
   {
-    label: "首页",
+    label: "仪表盘",
     icon: Home,
-    href: "/",
+    href: "/app",
     color: "text-sky-500",
   },
   {
     label: "好友",
-    icon: Users, // 使用 Users 图标
-    href: "/friends", // 路由路径
+    icon: Users,
+    href: "/friends",
     color: "text-green-500",
   },
   {
@@ -43,6 +41,10 @@ export function Navbar() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const supabase = createClient();
+
+  // ... 其他代码保持不变 ...
+
+ 
 
   const getUserInfo = async () => {
     const {
@@ -126,7 +128,10 @@ export function Navbar() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between px-4 lg:px-8 mx-auto max-w-7xl h-16">
         {/* Logo and Mobile Menu Button */}
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="font-bold text-xl">
+          <Link 
+            href={username ? "/app" : "/"} // 如果用户已登录，点击 logo 跳转到 /app，否则跳转到首页
+            className="font-bold text-xl"
+          >
             5 AM Club
           </Link>
           <Button
@@ -141,7 +146,7 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex lg:items-center lg:space-x-6">
-          {routes.map((route) => (
+          {username && routes.map((route) => (
             <Link
               key={route.href}
               href={route.href}
@@ -164,7 +169,7 @@ export function Navbar() {
         {/* Mobile Navigation */}
         {isOpen && (
           <nav className="lg:hidden pb-4">
-            {routes.map((route) => (
+            {username && routes.map((route) => (
               <Link
                 key={route.href}
                 href={route.href}
