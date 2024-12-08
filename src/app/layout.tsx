@@ -4,10 +4,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Navbar } from "@/components/layout/Navbar";
 import "./globals.css";
 import type { Metadata } from "next";
+import ClientProvider from "@/components/ClientProvider"; // 新增
 
 const inter = Inter({ subsets: ["latin"] });
-
-
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://5amclub.life'),
@@ -43,6 +42,7 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
+
 export default function RootLayout({
   children,
 }: {
@@ -52,7 +52,9 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className={inter.className}>
         <Navbar />
-        <main className="pt-16 min-h-screen">{children}</main>
+        <ClientProvider>
+          <main className="pt-16 min-h-screen">{children}</main>
+        </ClientProvider>
         <Toaster />
       </body>
     </html>

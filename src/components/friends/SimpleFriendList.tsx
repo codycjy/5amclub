@@ -7,6 +7,7 @@ import {
   AvatarFallback,
 } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface FriendInfo {
   user_id: string;
@@ -23,6 +24,7 @@ interface FriendListProps {
 }
 
 export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
+  const { t } = useTranslation();
   const supabase = createClient();
   const [friendsInfo, setFriendsInfo] = useState<FriendInfo[]>([]);
 
@@ -92,9 +94,9 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">好友列表</h2>
+      <h2 className="text-xl font-semibold mb-4">{t('friends.list.title')}</h2>
       {friendsInfo.length === 0 ? (
-        <p className="text-gray-500">暂无好友</p>
+        <p className="text-gray-500">{t('friends.list.noFriends')}</p>
       ) : (
         <ul className="space-y-3">
           {friendsInfo.map((friend) => (
@@ -105,18 +107,18 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
               <AvatarUI className="h-8 w-8">
                 <AvatarImage
                   src={friend.signed_avatar_url}
-                  alt={friend.username || "用户头像"}
+                  alt={t('friends.list.avatarAlt', { username: friend.username })}
                 />
                 <AvatarFallback>
-                  {friend.username?.[0]?.toUpperCase() || "U"}
+                  {friend.username?.[0]?.toUpperCase() || t('friends.list.unknownUserInitial')}
                 </AvatarFallback>
               </AvatarUI>
               <div className="min-w-0">
                 <div className="font-medium truncate">
-                  {friend.username || "未知用户"}
+                  {friend.username || t('friends.list.unknownUser')}
                 </div>
                 <div className="text-xs text-gray-500">
-                  连续{friend.current_streak}天
+                  {t('friends.list.streakCount', { count: friend.current_streak })}
                 </div>
               </div>
             </li>

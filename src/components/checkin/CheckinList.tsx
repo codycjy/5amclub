@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { useCheckins } from "@/contexts/CheckinContext";
 
 export function CheckinList() {
+  const { t, i18n } = useTranslation();
   const { checkins, refreshCheckins } = useCheckins();
   const [userTimezone, setUserTimezone] = useState<string>("UTC");
   const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ export function CheckinList() {
 
   const fetchUserSettings = async () => {
     try {
-      const {data:userData} = await supabase.auth.getUser()
+      const { data: userData } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("user_settings")
         .select("timezone")
@@ -41,7 +43,7 @@ export function CheckinList() {
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return new Intl.DateTimeFormat("zh-CN", {
+      return new Intl.DateTimeFormat(i18n.language, {
         timeZone: userTimezone,
         year: "numeric",
         month: "numeric",
@@ -55,17 +57,17 @@ export function CheckinList() {
   };
 
   if (loading) {
-    return <div>加载中...</div>;
+    return <div>{t("checkinList.loading")}</div>;
   }
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">打卡记录</h2>
+      <h2 className="text-2xl font-bold">{t("checkinList.title")}</h2>
       {checkins.length === 0 ? (
         <Card>
           <CardContent className="p-6">
             <p className="text-center text-gray-500">
-              还没有打卡记录哦，开始第一次打卡吧！
+              {t("checkinList.emptyState")}
             </p>
           </CardContent>
         </Card>
@@ -81,7 +83,7 @@ export function CheckinList() {
             <CardContent>
               <p className="whitespace-pre-wrap">{checkin.content}</p>
               <p className="text-xs text-gray-500 mt-2">
-                {new Date(checkin.created_at).toLocaleTimeString("zh-CN", {
+                {new Date(checkin.created_at).toLocaleTimeString(i18n.language, {
                   timeZone: userTimezone,
                   hour: "2-digit",
                   minute: "2-digit",

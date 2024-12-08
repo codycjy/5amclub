@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import {
   Form,
   FormControl,
@@ -20,48 +21,51 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/avatar/Avatar";
-
-const formSchema = z
-  .object({
-    username: z
-      .string()
-      .transform(str => str === '' ? null : str) // 空字符串转换为 null
-      .nullable()
-      .refine(
-        (val) => {
-          if (val === null) return true; // 如果是 null，则验证通过
-          return val.length >= 3 && val.length <= 20 && /^[a-zA-Z0-9_-]+$/.test(val);
-        },
-        {
-          message: "用户名必须是3-20个字符，只能包含字母、数字、下划线和横线"
-        }
-      ),
-    checkin_start_time: z.string(),
-    checkin_end_time: z.string(),
-    avatar_url: z.string().nullable(),
-  })
-  .refine(
-    (data) => {
-      const start = new Date(`2000-01-01T${data.checkin_start_time}`);
-      const end = new Date(`2000-01-01T${data.checkin_end_time}`);
-      return end.getTime() - start.getTime() >= 3600000;
-    },
-    {
-      message: "打卡时间段至少需要1小时",
-      path: ["checkin_end_time"],
-    }
-  );
-
-type FormValues = z.infer<typeof formSchema>;
+import { useAvatarUrl } from "@/hooks/useAvatarUrl";
 
 export function SettingsForm() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string>("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const avatarUrl = useAvatarUrl(avatarPath);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
+
+  const formSchema = z
+    .object({
+      username: z
+        .string()
+        .transform(str => str === '' ? null : str)
+        .nullable()
+        .refine(
+          (val) => {
+            if (val === null) return true;
+            return val.length >= 3 && val.length <= 20 && /^[a-zA-Z0-9_-]+$/.test(val);
+          },
+          {
+            message: t('settings.form.validation.username')
+          }
+        ),
+      checkin_start_time: z.string(),
+      checkin_end_time: z.string(),
+      avatar_url: z.string().nullable(),
+    })
+    .refine(
+      (data) => {
+        const start = new Date(`2000-01-01T${data.checkin_start_time}`);
+        const end = new Date(`2000-01-01T${data.checkin_end_time}`);
+        return end.getTime() - start.getTime() >= 3600000;
+      },
+      {
+        message: t('settings.form.validation.timeRange'),
+        path: ["checkin_end_time"],
+      }
+    );
+
+  type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -101,15 +105,9 @@ export function SettingsForm() {
 
         if (settings) {
           if (settings.avatar_url) {
-            const { data, error } = await supabase.storage
-              .from("avatars")
-              .createSignedUrl(settings.avatar_url, 3600);
-
-            if (!error && data) {
-              setAvatarUrl(data.signedUrl);
-            }
+            setAvatarPath(settings.avatar_url);
           }
-
+          
           form.reset({
             username: settings.username || null,
             checkin_start_time: settings.checkin_start_time,
@@ -120,8 +118,8 @@ export function SettingsForm() {
       } catch (error) {
         console.error("Error loading settings:", error);
         toast({
-          title: "加载设置失败",
-          description: "请刷新页面重试",
+          title: t('settings.errors.load.title'),
+          description: t('settings.errors.load.description'),
           variant: "destructive",
         });
       } finally {
@@ -130,7 +128,7 @@ export function SettingsForm() {
     }
 
     loadSettings();
-  }, [form, supabase, toast]);
+  }, [form, supabase, toast, t]);
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
@@ -140,9 +138,8 @@ export function SettingsForm() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) throw new Error("未找到用户");
+      if (!user) throw new Error(t('settings.errors.userNotFound'));
 
-      // 只在用户输入了用户名时才检查用户名是否存在
       if (values.username && values.username.trim() !== '') {
         const { data: existingUser } = await supabase
           .from("user_settings")
@@ -153,8 +150,8 @@ export function SettingsForm() {
 
         if (existingUser) {
           toast({
-            title: "用户名已存在",
-            description: "请选择其他用户名",
+            title: t('settings.errors.usernameTaken.title'),
+            description: t('settings.errors.usernameTaken.description'),
             variant: "destructive",
           });
           setLoading(false);
@@ -180,16 +177,16 @@ export function SettingsForm() {
       if (error) throw error;
 
       toast({
-        title: "设置已保存",
-        description: "您的个人信息已更新",
+        title: t('settings.success.title'),
+        description: t('settings.success.description'),
       });
 
       router.refresh();
     } catch (error) {
       console.error("Error saving settings:", error);
       toast({
-        title: "保存失败",
-        description: "请稍后重试",
+        title: t('settings.errors.save.title'),
+        description: t('settings.errors.save.description'),
         variant: "destructive",
       });
     } finally {
@@ -201,7 +198,7 @@ export function SettingsForm() {
     return (
       <Card>
         <CardContent className="p-6">
-          <div>加载中...</div>
+          <div>{t('settings.loading')}</div>
         </CardContent>
       </Card>
     );
@@ -210,28 +207,22 @@ export function SettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>个人设置</CardTitle>
+        <CardTitle>{t('settings.title')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="flex flex-col items-center gap-4 mb-6">
-              <Avatar
-                url={avatarUrl}
-                onUpload={async (fileName) => {
-                  const { data, error } = await supabase.storage
-                    .from("avatars")
-                    .createSignedUrl(fileName, 3600);
-
-                  if (!error && data) {
-                    setAvatarUrl(data.signedUrl);
-                    form.setValue("avatar_url", fileName);
-                  }
-                }}
-                fallback={userEmail?.[0]?.toUpperCase()}
-              />
+            <Avatar
+    url={avatarUrl}
+    onUpload={async (fileName) => {
+      setAvatarPath(fileName);
+      form.setValue("avatar_url", fileName);
+    }}
+    fallback={userEmail?.[0]?.toUpperCase()}
+  />
               <FormDescription>
-                头像为可选项，不上传则显示邮箱首字母
+                {t('settings.form.avatarDescription')}
               </FormDescription>
             </div>
 
@@ -240,17 +231,18 @@ export function SettingsForm() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>用户名（可选）</FormLabel>
+                  <FormLabel>{t('settings.form.labels.username')}</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="设置你的用户名" 
+                      placeholder={t('settings.form.placeholders.username')}
                       {...field} 
                       value={field.value || ''} 
                     />
                   </FormControl>
                   <FormDescription>
-                    可以设置一个独特的用户名。当前显示为：
-                    {field.value || userEmail}
+                    {t('settings.form.descriptions.username', {
+                      current: field.value || userEmail
+                    })}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -262,7 +254,7 @@ export function SettingsForm() {
               name="checkin_start_time"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>打卡开始时间</FormLabel>
+                  <FormLabel>{t('settings.form.labels.startTime')}</FormLabel>
                   <FormControl>
                     <Input type="time" {...field} />
                   </FormControl>
@@ -276,7 +268,7 @@ export function SettingsForm() {
               name="checkin_end_time"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>打卡结束时间</FormLabel>
+                  <FormLabel>{t('settings.form.labels.endTime')}</FormLabel>
                   <FormControl>
                     <Input type="time" {...field} />
                   </FormControl>
@@ -286,11 +278,13 @@ export function SettingsForm() {
             />
 
             <div className="text-sm text-muted-foreground">
-              当前时区: {Intl.DateTimeFormat().resolvedOptions().timeZone}
+              {t('settings.form.timezone', {
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+              })}
             </div>
 
             <Button type="submit" disabled={loading}>
-              {loading ? "保存中..." : "保存设置"}
+              {loading ? t('settings.form.saving') : t('settings.form.save')}
             </Button>
           </form>
         </Form>

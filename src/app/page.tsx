@@ -1,49 +1,54 @@
 // src/app/page.tsx
+'use client'; // 标记为客户端组件
+
 import Link from "next/link";
 import { Clock, Sunrise, Users, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
+import '@/lib/i18n/i18n'; 
 
 const features = [
   {
     icon: Sunrise,
-    title: "Transform Your Life",
-    description: "Join the 5AM Club to develop early rising habits, enhance life quality, and achieve personal breakthroughs."
+    titleKey: "features.transformYourLife.title",
+    descriptionKey: "features.transformYourLife.description"
   },
   {
     icon: Users,
-    title: "Like-minded Community",
-    description: "Connect with early risers worldwide, inspire each other, and grow together."
+    titleKey: "features.community.title",
+    descriptionKey: "features.community.description"
   },
   {
     icon: Target,
-    title: "Goal Tracking",
-    description: "Set personal goals, track your wake-up times, and build lasting early rising habits."
+    titleKey: "features.goalTracking.title",
+    descriptionKey: "features.goalTracking.description"
   },
   {
     icon: Clock,
-    title: "Data Insights",
-    description: "Visualize your progress with intuitive statistics to understand and improve your daily routine."
+    titleKey: "features.dataInsights.title",
+    descriptionKey: "features.dataInsights.description"
   }
 ];
 
 export default function HomePage() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
       <main className="flex-grow flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto pt-20 pb-16">
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
-            Welcome to the <span className="text-sky-600">5AM Club</span>
+            {t('welcome', { club: t('club') })}
           </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Join an exclusive community of high achievers who start their day at 5AM.
-            Transform your mornings, transform your life.
+          <p className="text-xl text-gray-600 mb-8 whitespace-pre-line">
+            {t('hero.joinText')}
           </p>
           <Link href="/auth">
             <Button 
               className="bg-sky-600 hover:bg-sky-700 text-white px-8 py-6 text-lg rounded-full transition-all duration-200 transform hover:scale-105"
             >
-              Start Your Journey
+              {t('hero.startJourney')}
             </Button>
           </Link>
         </div>
@@ -60,11 +65,11 @@ export default function HomePage() {
                   <feature.icon className="w-6 h-6 text-sky-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">
-                  {feature.title}
+                  {t(feature.titleKey)}
                 </h3>
               </div>
               <p className="text-gray-600">
-                {feature.description}
+                {t(feature.descriptionKey)}
               </p>
             </div>
           ))}
@@ -73,17 +78,16 @@ export default function HomePage() {
         {/* Bottom CTA Section */}
         <div className="text-center pb-20">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to Transform Your Morning Routine?
+            {t('cta.readyToTransform')}
           </h2>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of successful individuals who have already discovered 
-            the power of early rising. Your journey to excellence begins at 5AM.
+            {t('cta.joinThousands')}
           </p>
           <Link href="/auth">
             <Button 
               className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
             >
-              Join Now
+              {t('cta.joinNow')}
             </Button>
           </Link>
         </div>

@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface FriendRequestsProps {
   incomingRequests: any[];
@@ -18,7 +20,9 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
   incomingRequests,
   onRequestHandled,
 }) => {
+  const { t } = useTranslation();
   const supabase = createClient();
+
   const handleAccept = async (requestId: number) => {
     const { error } = await supabase
       .from("friend_requests")
@@ -33,7 +37,7 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
       return;
     }
     toast({
-      title: "已接受好友请求",
+      title: t("friendRequests.toast.accepted"),
       variant: "default",
     });
     onRequestHandled();
@@ -53,7 +57,7 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
       return;
     }
     toast({
-      title: "已拒绝好友请求",
+      title: t("friendRequests.toast.rejected"),
       variant: "default",
     });
     onRequestHandled();
@@ -62,15 +66,15 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
   if (incomingRequests.length === 0) {
     return (
       <div>
-        <h2 className="text-xl font-semibold mb-2">好友请求</h2>
-        <p>你目前没有收到任何好友请求。</p>
+        <h2 className="text-xl font-semibold mb-2">{t("friendRequests.title")}</h2>
+        <p>{t("friendRequests.noRequests")}</p>
       </div>
     );
   }
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">好友请求</h2>
+      <h2 className="text-xl font-semibold mb-2">{t("friendRequests.title")}</h2>
       <ul className="space-y-4">
         {incomingRequests.map((request) => (
           <li
@@ -84,14 +88,14 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
                 size="sm"
                 onClick={() => handleAccept(request.id)}
               >
-                接受
+                {t("friendRequests.acceptButton")}
               </Button>
               <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => handleReject(request.id)}
               >
-                拒绝
+                {t("friendRequests.rejectButton")}
               </Button>
             </div>
           </li>
@@ -102,12 +106,12 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
 };
 
 const FriendRequestItem: React.FC<{ request: any }> = ({ request }) => {
+  const { t } = useTranslation();
   const supabase = createClient();
   const [senderInfo, setSenderInfo] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
 
   const fetchSenderInfo = async () => {
-    // First get the sender_id from friend_requests
     const { data: requestData, error: requestError } = await supabase
       .from("friend_requests")
       .select("sender_id")
@@ -119,7 +123,6 @@ const FriendRequestItem: React.FC<{ request: any }> = ({ request }) => {
       return;
     }
 
-    // Then get the user info from user_settings using the sender_id
     const { data: userData, error: userError } = await supabase
       .from("user_settings")
       .select("username, avatar_url")
@@ -136,7 +139,6 @@ const FriendRequestItem: React.FC<{ request: any }> = ({ request }) => {
       avatar_url: userData.avatar_url,
     });
 
-    // Create signed URL for avatar if it exists
     if (userData.avatar_url) {
       const { data: signedUrl } = await supabase.storage
         .from("avatars")
@@ -155,12 +157,17 @@ const FriendRequestItem: React.FC<{ request: any }> = ({ request }) => {
   return (
     <div className="flex items-center gap-3">
       <AvatarUI className="h-10 w-10">
-        <AvatarImage src={avatarUrl} alt={senderInfo?.username || "用户头像"} />
+        <AvatarImage 
+          src={avatarUrl} 
+          alt={senderInfo?.username || t("friendRequests.unknownUser")} 
+        />
         <AvatarFallback>
           {senderInfo?.username?.[0]?.toUpperCase() || "U"}
         </AvatarFallback>
       </AvatarUI>
-      <span className="font-medium">{senderInfo?.username || "未知用户"}</span>
+      <span className="font-medium">
+        {senderInfo?.username || t("friendRequests.unknownUser")}
+      </span>
     </div>
   );
 };

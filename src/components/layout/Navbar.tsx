@@ -12,39 +12,39 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-
-const routes = [
-  {
-    label: "仪表盘",
-    icon: Home,
-    href: "/app",
-    color: "text-sky-500",
-  },
-  {
-    label: "好友",
-    icon: Users,
-    href: "/friends",
-    color: "text-green-500",
-  },
-  {
-    label: "设置",
-    icon: Settings,
-    href: "/settings",
-    color: "text-violet-500",
-  },
-];
+import LanguageSwitcher from "../settings/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
+import { useAvatarUrl } from "@/hooks/useAvatarUrl"; // Add this import
 
 export function Navbar() {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState<string>("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const supabase = createClient();
+  const avatarUrl = useAvatarUrl(avatarPath); // Use the hook here
 
-  // ... 其他代码保持不变 ...
-
- 
+  const routes = [
+    {
+      label: t("navbar.dashboard"),
+      icon: Home,
+      href: "/app",
+      color: "text-sky-500",
+    },
+    {
+      label: t("navbar.friends"),
+      icon: Users,
+      href: "/friends",
+      color: "text-green-500",
+    },
+    {
+      label: t("navbar.settings"),
+      icon: Settings,
+      href: "/settings",
+      color: "text-violet-500",
+    },
+  ];
 
   const getUserInfo = async () => {
     const {
@@ -70,26 +70,8 @@ export function Navbar() {
     } else {
       setUsername("");
       setAvatarPath(null);
-      setAvatarUrl(null);
     }
   };
-
-  // 只在 avatarPath 改变时获取签名 URL
-  useEffect(() => {
-    const getSignedUrl = async () => {
-      if (avatarPath) {
-        const { data } = await supabase.storage
-          .from("avatars")
-          .createSignedUrl(avatarPath, 3600);
-
-        if (data) {
-          setAvatarUrl(data.signedUrl);
-        }
-      }
-    };
-
-    getSignedUrl();
-  }, [avatarPath]);
 
   useEffect(() => {
     getUserInfo();
@@ -102,7 +84,6 @@ export function Navbar() {
       } else if (event === "SIGNED_OUT") {
         setUsername("");
         setAvatarPath(null);
-        setAvatarUrl(null);
       }
     });
 
@@ -129,7 +110,7 @@ export function Navbar() {
         {/* Logo and Mobile Menu Button */}
         <div className="flex items-center justify-between h-16">
           <Link 
-            href={username ? "/app" : "/"} // 如果用户已登录，点击 logo 跳转到 /app，否则跳转到首页
+            href={username ? "/app" : "/"} 
             className="font-bold text-xl"
           >
             5 AM Club
@@ -164,6 +145,7 @@ export function Navbar() {
             </Link>
           ))}
           {username && <UserInfo />}
+          <LanguageSwitcher />
         </nav>
 
         {/* Mobile Navigation */}

@@ -1,0 +1,255 @@
+{
+  "welcome": "欢迎来到 {{club}}",
+  "club": "晨起俱乐部",
+  "hero": {
+    "joinText": "加入一个由高成就者组成的专属社区，他们每天早上5点开始一天。\n改变你的早晨，改变你的生活。",
+    "startJourney": "开始你的旅程"
+  },
+  "features": {
+    "transformYourLife": {
+      "title": "改变你的生活",
+      "description": "加入晨起俱乐部，培养早起习惯，提升生活质量，实现个人突破。"
+    },
+    "community": {
+      "title": "志同道合的社区",
+      "description": "与全球早起者连接，互相激励，共同成长。"
+    },
+    "goalTracking": {
+      "title": "目标跟踪",
+      "description": "设定个人目标，跟踪你的起床时间，建立持久的早起习惯。"
+    },
+    "dataInsights": {
+      "title": "数据洞察",
+      "description": "通过直观的统计数据可视化你的进展，理解并改善你的日常作息。"
+    }
+  },
+  "cta": {
+    "readyToTransform": "准备好改变你的早晨作息了吗？",
+    "joinThousands": "加入已经发现早起力量的数千名成功人士。你的卓越之旅从早上5点开始。",
+    "joinNow": "立即加入"
+  },
+  "navbar": {
+    "dashboard": "仪表盘",
+    "friends": "好友",
+    "settings": "设置"
+  },
+  "checkinCalendar": {
+    "title": "打卡统计",
+    "currentStreak": "当前连续",
+    "longestStreak": "最长连续",
+    "totalCheckins": "总打卡"
+  },
+  "checkinForm": {
+    "title": "今日打卡",
+    "moodLabel": "今天心情如何？",
+    "contentLabel": "写点什么吧",
+    "contentPlaceholder": "记录一下今天的心情...",
+    "submitButton": "提交打卡",
+    "submitting": "提交中...",
+    "moods": {
+      "happy": "😊 开心",
+      "neutral": "😐 一般",
+      "sad": "😢 难过",
+      "angry": "😡 生气",
+      "thinking": "🤔 思考"
+    },
+    "validation": {
+      "moodRequired": "请选择心情",
+      "contentMaxLength": "内容不能超过500字"
+    },
+    "toast": {
+      "alreadyCheckedIn": {
+        "title": "今天已经打过卡了！",
+        "description": "明天再来吧！"
+      },
+      "success": {
+        "title": "打卡成功！",
+        "description": "继续保持每天记录的好习惯吧！"
+      },
+      "error": {
+        "title": "打卡失败",
+        "description": "请稍后重试"
+      }
+    }
+  },
+  "checkinList": {
+    "loading": "加载中...",
+    "title": "打卡记录",
+    "emptyState": "还没有打卡记录哦，开始第一次打卡吧！",
+    "dateFormat": {
+      "weekday": "long",
+      "year": "numeric",
+      "month": "numeric",
+      "day": "numeric"
+    },
+    "timeFormat": {
+      "hour": "2-digit",
+      "minute": "2-digit"
+    }
+  },
+  "friendList": {
+    "title": "你的好友",
+    "noFriends": "你还没有好友。",
+    "unknownUser": "未知用户",
+    "stats": {
+      "currentStreak": "当前连续打卡: {{count}} 天",
+      "longestStreak": "最长连续打卡: {{count}} 天",
+      "totalCheckins": "总打卡次数: {{count}} 次"
+    },
+    "removeButton": "删除",
+    "toast": {
+      "removeSuccess": {
+        "title": "好友删除成功",
+        "description": "你已经成功删除了这个好友"
+      },
+      "removeError": {
+        "title": "删除失败",
+        "description": "删除好友时发生错误"
+      }
+    }
+  },
+  "friendRequests": {
+    "title": "好友请求",
+    "noRequests": "你目前没有收到任何好友请求。",
+    "acceptButton": "接受",
+    "rejectButton": "拒绝",
+    "unknownUser": "未知用户",
+    "toast": {
+      "accepted": "已接受好友请求",
+      "rejected": "已拒绝好友请求"
+    }
+  },
+  "sendFriendRequest": {
+    "placeholder": "输入用户名发送好友请求",
+    "sendButton": "发送",
+    "sending": "发送中...",
+    "toast": {
+      "invalidUsername": {
+        "title": "请输入有效的用户名"
+      },
+      "notLoggedIn": {
+        "title": "未登录",
+        "description": "请先登录后再操作"
+      },
+      "getUserError": {
+        "title": "获取用户信息失败",
+        "description": "请稍后重试"
+      },
+      "userNotFound": {
+        "title": "找不到该用户",
+        "description": "请检查用户名是否正确"
+      },
+      "sendError": {
+        "title": "发送好友请求失败",
+        "description": "请稍后重试"
+      },
+      "success": {
+        "title": "已发送好友请求"
+      }
+    }
+  },
+  "friends": {
+    "list": {
+      "title": "好友列表",
+      "noFriends": "暂无好友",
+      "avatarAlt": "{{username}}的头像",
+      "unknownUser": "未知用户",
+      "unknownUserInitial": "用",
+      "streakCount": "连续{{count}}天"
+    }
+  },
+  "settings": {
+    "title": "个人设置",
+    "loading": "加载中...",
+    "form": {
+      "validation": {
+        "username": "用户名必须是3-20个字符，只能包含字母、数字、下划线和横线",
+        "timeRange": "打卡时间段至少需要1小时"
+      },
+      "labels": {
+        "username": "用户名（可选）",
+        "startTime": "打卡开始时间",
+        "endTime": "打卡结束时间"
+      },
+      "placeholders": {
+        "username": "设置你的用户名"
+      },
+      "descriptions": {
+        "username": "可以设置一个独特的用户名。当前显示为：{{current}}"
+      },
+      "avatarDescription": "头像为可选项，不上传则显示邮箱首字母",
+      "timezone": "当前时区: {{timezone}}",
+      "save": "保存设置",
+      "saving": "保存中..."
+    },
+    "success": {
+      "title": "设置已保存",
+      "description": "您的个人信息已更新"
+    },
+    "errors": {
+      "userNotFound": "未找到用户",
+      "usernameTaken": {
+        "title": "用户名已存在",
+        "description": "请选择其他用户名"
+      },
+      "save": {
+        "title": "保存失败",
+        "description": "请稍后重试"
+      }
+    }
+  },
+  "avatar": {
+    "altText": "头像",
+    "changeAvatar": "更换头像",
+    "uploading": "上传中...",
+    "success": {
+      "title": "上传成功",
+      "description": "头像已更新"
+    },
+    "errors": {
+      "invalidType": "请上传图片文件",
+      "fileSize": "文件大小不能超过5MB",
+      "userNotFound": "未找到用户",
+      "uploadFailed": {
+        "title": "上传失败",
+        "description": "请稍后重试"
+      }
+    }
+  },
+  "auth": {
+    "validation": {
+      "email": "请输入有效的邮箱地址",
+      "password": "密码至少6个字符"
+    },
+    "form": {
+      "email": "邮箱",
+      "password": "密码",
+      "processing": "处理中..."
+    },
+    "signin": {
+      "action": "登录",
+      "success": "登录成功！",
+      "error": {
+        "title": "登录失败",
+        "invalidCredentials": "邮箱或密码错误"
+      },
+      "noAccount": "还没有账号？",
+      "goToSignUp": "去注册"
+    },
+    "signup": {
+      "action": "注册",
+      "success": {
+        "title": "注册成功！",
+        "description": "请查看邮箱确认注册"
+      },
+      "error": {
+        "title": "注册失败"
+      },
+      "haveAccount": "已有账号？",
+      "goToSignIn": "去登录"
+    },
+    "error": {
+      "tryAgain": "请稍后重试"
+    }
+  }
+}
