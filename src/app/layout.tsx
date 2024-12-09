@@ -60,11 +60,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" className="overflow-y-scroll">
       <body className={inter.className}>
         <Navbar />
         <ClientProvider>
-          <main className="pt-16 min-h-screen">{children}</main>
+          <main className="pt-16 min-h-screen container mx-auto">
+            {children}
+          </main>
         </ClientProvider>
         <Toaster />
       </body>

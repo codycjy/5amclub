@@ -8,12 +8,15 @@ import { FriendList } from "@/components/friends/FriendList";
 import { FriendRequests } from "@/components/friends/FriendRequest";
 import { SendFriendRequest } from "@/components/friends/SendFriendRequest";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useTranslation } from "react-i18next";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 export default function FriendsPage() {
   const [friends, setFriends] = useState<any[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  const { t } = useTranslation();
 
   const fetchFriends = async () => {
     const user = (await supabase.auth.getUser()).data.user;
@@ -103,18 +106,28 @@ export default function FriendsPage() {
   }
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">好友</h1>
-      <SendFriendRequest onRequestSent={fetchFriendRequests} />
-      <div className="mt-8">
-        <FriendRequests
-          incomingRequests={incomingRequests}
-          onRequestHandled={fetchFriendRequests}
-        />
-      </div>
-      <div className="mt-8">
-        <FriendList friends={friends} />
-      </div>
-    </div>
+    <PageContainer>
+      <h1 className="text-2xl font-bold mb-4">{t("navbar.friends")}</h1>
+      {loading ? (
+        <div className="flex items-center justify-center h-[400px]">
+          {" "}
+          {/* 固定高度的容器 */}
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <>
+          <SendFriendRequest onRequestSent={fetchFriendRequests} />
+          <div className="mt-8">
+            <FriendRequests
+              incomingRequests={incomingRequests}
+              onRequestHandled={fetchFriendRequests}
+            />
+          </div>
+          <div className="mt-8">
+            <FriendList friends={friends} />
+          </div>
+        </>
+      )}
+    </PageContainer>
   );
 }
