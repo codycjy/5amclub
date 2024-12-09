@@ -41,23 +41,6 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
       return;
     }
 
-    const { data: currentUserData, error: currentUserError } = await supabase
-      .from("user_settings")
-      .select("username")
-      .eq("user_id", currentUser.id)
-      .maybeSingle();
-
-    if (currentUserError || !currentUserData) {
-      console.error("Error getting current user:", currentUserError);
-      toast({
-        title: t("sendFriendRequest.toast.getUserError.title"),
-        description: t("sendFriendRequest.toast.getUserError.description"),
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
     const { data: userSettings, error: userError } = await supabase
       .from("user_settings")
       .select("user_id, username")
@@ -80,7 +63,7 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
     const { error } = await supabase.from("friend_requests").insert({
       sender_id: currentUser.id,
       receiver_id: receiverId,
-      sender_username: currentUserData.username,
+      sender_username: userSettings.username,
       status: "pending",
     });
 

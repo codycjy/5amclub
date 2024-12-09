@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { useAvatarUrl } from "@/hooks/useAvatarUrl";
 
 interface FriendRequestsProps {
   incomingRequests: any[];
@@ -108,61 +109,48 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
     </div>
   );
 };
-
 const FriendRequestItem: React.FC<{ request: any }> = ({ request }) => {
   const { t } = useTranslation();
   const supabase = createClient();
-  const [senderInfo, setSenderInfo] = useState<any>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+  const [senderInfo, setSenderInfo] = useState<{
+    username: string;
+    avatar_url: string | null;
+  } | null>(null);
+
+  const avatarUrl = useAvatarUrl(senderInfo ? senderInfo.avatar_url : null);
 
   const fetchSenderInfo = async () => {
-    const { data: requestData, error: requestError } = await supabase
-      .from("friend_requests")
-      .select("sender_id")
-      .eq("id", request.id)
-      .single();
+    try {
+      // 可以直接从 friend_requests 表中获取 sender_username，无需额外查询
+      const { data: userData, error: userError } = await supabase
+        .from("user_settings")
+        .select("username, avatar_url")
+        .eq("user_id", request.sender_id)
+        .single();
 
-    if (requestError) {
-      console.error("Error fetching friend request:", requestError);
-      return;
-    }
-
-    const { data: userData, error: userError } = await supabase
-      .from("user_settings")
-      .select("username, avatar_url")
-      .eq("user_id", requestData.sender_id)
-      .single();
-
-    if (userError) {
-      console.error("Error fetching user info:", userError);
-      return;
-    }
-
-    setSenderInfo({
-      username: userData.username,
-      avatar_url: userData.avatar_url,
-    });
-
-    if (userData.avatar_url) {
-      const { data: signedUrl } = await supabase.storage
-        .from("avatars")
-        .createSignedUrl(userData.avatar_url, 3600);
-
-      if (signedUrl) {
-        setAvatarUrl(signedUrl.signedUrl);
+      if (userError) {
+        console.error("Error fetching user info:", userError);
+        return;
       }
+
+      setSenderInfo({
+        username: userData.username,
+        avatar_url: userData.avatar_url,
+      });
+    } catch (error) {
+      console.error("Error in fetchSenderInfo:", error);
     }
   };
 
   useEffect(() => {
     fetchSenderInfo();
-  }, [request.id]);
+  }, [request.sender_id]);
 
   return (
     <div className="flex items-center gap-3">
       <AvatarUI className="h-10 w-10">
         <AvatarImage
-          src={avatarUrl}
+          src={avatarUrl || undefined}
           alt={senderInfo?.username || t("friendRequests.unknownUser")}
         />
         <AvatarFallback>
