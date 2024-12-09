@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // 定义Friend接口
 interface Friend {
@@ -77,7 +78,7 @@ export default function AppHomePage() {
                 isCollapsed ? "opacity-0" : "opacity-100"
               } transition-opacity duration-300`}
             >
-              <Suspense fallback={<div>加载中...</div>}>
+              <Suspense fallback={<LoadingSpinner />}>
                 <SimpleFriendList friends={friends} />
               </Suspense>
             </div>
@@ -89,7 +90,7 @@ export default function AppHomePage() {
             <div className="md:col-span-2">
               <CheckinForm />
               <div className="mt-6">
-                <Suspense fallback={<div>加载中...</div>}>
+                <Suspense fallback={<LoadingSpinner />}>
                   <CheckinList />
                 </Suspense>
               </div>
@@ -97,7 +98,7 @@ export default function AppHomePage() {
 
             {/* 右侧日历 */}
             <div className="md:col-span-1">
-              <Suspense fallback={<div>加载中...</div>}>
+              <Suspense fallback={<LoadingSpinner />}>
                 <CheckinCalendar />
               </Suspense>
             </div>

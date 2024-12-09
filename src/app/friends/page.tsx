@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { FriendList } from "@/components/friends/FriendList";
 import { FriendRequests } from "@/components/friends/FriendRequest";
 import { SendFriendRequest } from "@/components/friends/SendFriendRequest";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function FriendsPage() {
   const [friends, setFriends] = useState<any[]>([]);
@@ -98,7 +99,7 @@ export default function FriendsPage() {
   }, []);
 
   if (loading) {
-    return <div className="p-4">加载中...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
