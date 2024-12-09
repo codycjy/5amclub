@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { useCheckins } from "@/contexts/CheckinContext";
+import { MoodType, moodEmojis } from "@/types/checkins";
 
 interface IpInfoResponse {
   ip: string;
@@ -34,12 +36,8 @@ interface IpInfoResponse {
   readme: string;
 }
 
-const formSchema = z.object({
-  mood: z.string().min(1, "请选择心情"),
-  content: z.string().max(500, "内容不能超过500字"),
-});
-
 export function CheckinForm() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -47,10 +45,17 @@ export function CheckinForm() {
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const { refreshCheckins, refreshCalendarData } = useCheckins();
 
+  const formSchema = z.object({
+    mood: z.nativeEnum(MoodType, {
+      errorMap: () => ({ message: t("checkinForm.validation.moodRequired") }),
+    }),
+    content: z.string().max(500, t("checkinForm.validation.contentMaxLength")),
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      mood: "",
+      mood: undefined,
       content: "",
     },
   });
@@ -58,7 +63,7 @@ export function CheckinForm() {
   const fetchWithTimeout = async (
     url: string,
     timeout: number,
-    headers: HeadersInit = {}
+    headers: HeadersInit = {},
   ): Promise<Response> => {
     const controller = new AbortController();
     const promise = fetch(url, { signal: controller.signal, headers: headers });
@@ -81,12 +86,11 @@ export function CheckinForm() {
       lon: number | null = null;
 
     try {
-      const  user= await supabase.auth.getUser();
-      // First, update user settings with timezone if needed
+      const user = await supabase.auth.getUser();
       const { data: settings } = await supabase
         .from("user_settings")
         .select("timezone")
-        .eq("user_id",user.data.user?.id) 
+        .eq("user_id", user.data.user?.id)
         .single();
 
       if (!settings || settings.timezone !== userTimezone) {
@@ -97,7 +101,7 @@ export function CheckinForm() {
 
       const locationResponse = await fetchWithTimeout(
         `https://ipapi.co/json/`,
-        5000
+        5000,
       );
       const locationData: IpInfoResponse = await locationResponse.json();
 
@@ -131,8 +135,8 @@ export function CheckinForm() {
       if (error) {
         if (status === 409) {
           toast({
-            title: "今天已经打过卡了！",
-            description: "明天再来吧！",
+            title: t("checkinForm.toast.alreadyCheckedIn.title"),
+            description: t("checkinForm.toast.alreadyCheckedIn.description"),
             variant: "destructive",
           });
         } else {
@@ -140,8 +144,8 @@ export function CheckinForm() {
         }
       } else {
         toast({
-          title: "打卡成功！",
-          description: "继续保持每天记录的好习惯吧！",
+          title: t("checkinForm.toast.success.title"),
+          description: t("checkinForm.toast.success.description"),
         });
         await refreshCheckins();
         await refreshCalendarData();
@@ -151,8 +155,8 @@ export function CheckinForm() {
     } catch (error) {
       console.error("Error submitting checkin:", error);
       toast({
-        title: "打卡失败",
-        description: "请稍后重试",
+        title: t("checkinForm.toast.error.title"),
+        description: t("checkinForm.toast.error.description"),
         variant: "destructive",
       });
     } finally {
@@ -160,12 +164,17 @@ export function CheckinForm() {
     }
   };
 
-  const moods = ["😊 开心", "😐 一般", "😢 难过", "😡 生气", "🤔 思考"];
-
+  const moods = [
+    { type: MoodType.HAPPY, label: t("checkinForm.moods.happy") },
+    { type: MoodType.NEUTRAL, label: t("checkinForm.moods.neutral") },
+    { type: MoodType.SAD, label: t("checkinForm.moods.sad") },
+    { type: MoodType.ANGRY, label: t("checkinForm.moods.angry") },
+    { type: MoodType.THINKING, label: t("checkinForm.moods.thinking") },
+  ];
   return (
     <Card>
       <CardHeader>
-        <CardTitle>今日打卡</CardTitle>
+        <CardTitle>{t("checkinForm.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -175,16 +184,16 @@ export function CheckinForm() {
               name="mood"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>今天心情如何？</FormLabel>
+                  <FormLabel>{t("checkinForm.moodLabel")}</FormLabel>
                   <div className="flex gap-2 flex-wrap">
-                    {moods.map((mood) => (
+                    {moods.map(({ type, label }) => (
                       <Button
-                        key={mood}
+                        key={type}
                         type="button"
-                        variant={field.value === mood ? "default" : "outline"}
-                        onClick={() => field.onChange(mood)}
+                        variant={field.value === type ? "default" : "outline"}
+                        onClick={() => field.onChange(type)}
                       >
-                        {mood}
+                        {moodEmojis[type]} {label}
                       </Button>
                     ))}
                   </div>
@@ -197,16 +206,21 @@ export function CheckinForm() {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>写点什么吧</FormLabel>
+                  <FormLabel>{t("checkinForm.contentLabel")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="记录一下今天的心情..." {...field} />
+                    <Textarea
+                      placeholder={t("checkinForm.contentPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <Button type="submit" disabled={loading}>
-              {loading ? "提交中..." : "提交打卡"}
+              {loading
+                ? t("checkinForm.submitting")
+                : t("checkinForm.submitButton")}
             </Button>
           </form>
         </Form>

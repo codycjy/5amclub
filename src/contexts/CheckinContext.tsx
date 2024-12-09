@@ -8,14 +8,19 @@ import {
   useCallback,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { MoodType } from "@/types/checkins";
 
 interface Checkin {
   id: number;
   created_at: string;
-  mood: string;
+  mood: MoodType;
   content: string;
   user_id: string;
   updated_at: string;
+  city?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface StreakInfo {
@@ -63,7 +68,7 @@ export function CheckinProvider({ children }: { children: ReactNode }) {
 
   const refreshCheckins = useCallback(async () => {
     try {
-      const{data:userData} = await supabase.auth.getUser()
+      const { data: userData } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("checkins")
         .select("*")
@@ -71,7 +76,14 @@ export function CheckinProvider({ children }: { children: ReactNode }) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setCheckins(data || []);
+
+      // 确保 mood 字段符合 MoodType 枚举
+      const validatedCheckins = (data || []).map((checkin) => ({
+        ...checkin,
+        mood: checkin.mood as MoodType,
+      }));
+
+      setCheckins(validatedCheckins);
     } catch (error) {
       console.error("Error fetching checkins:", error);
       setCheckins([]);
@@ -80,24 +92,20 @@ export function CheckinProvider({ children }: { children: ReactNode }) {
 
   const refreshCalendarData = useCallback(async () => {
     try {
-      // 获取打卡日期
-      const {data:userData} = await supabase.auth.getUser()
+      const { data: userData } = await supabase.auth.getUser();
       const { data: checkinData, error: checkinError } = await supabase
         .from("checkins")
         .select("created_at")
         .eq("user_id", userData?.user?.id);
 
-
       if (checkinError) throw checkinError;
       const dates = checkinData.map((checkin) =>
-        toLocalDateString(checkin.created_at)
+        toLocalDateString(checkin.created_at),
       );
       setCheckinDates(dates);
 
-      // 获取连续打卡信息
-      const { data: streakData, error: streakError } = await supabase.rpc(
-        "get_streak_info"
-      );
+      const { data: streakData, error: streakError } =
+        await supabase.rpc("get_streak_info");
 
       if (streakError) throw streakError;
       setStreakInfo(streakData[0]);

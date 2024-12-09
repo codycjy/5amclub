@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface AvatarProps {
   url: string | null;
@@ -17,6 +18,7 @@ interface AvatarProps {
 }
 
 export function Avatar({ url, onUpload, fallback }: AvatarProps) {
+  const { t } = useTranslation();
   const supabase = createClient();
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -28,21 +30,21 @@ export function Avatar({ url, onUpload, fallback }: AvatarProps) {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      // 验证文件类型和大小
+      // Validate file type and size
       const fileType = file.type;
       if (!fileType.startsWith("image/")) {
-        throw new Error("请上传图片文件");
+        throw new Error(t("avatar.errors.invalidType"));
       }
 
       const fileSizeInMB = file.size / (1024 * 1024);
       if (fileSizeInMB > 5) {
-        throw new Error("文件大小不能超过5MB");
+        throw new Error(t("avatar.errors.fileSize"));
       }
 
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("未找到用户");
+      if (!user) throw new Error(t("avatar.errors.userNotFound"));
 
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/${Math.random()}.${fileExt}`;
@@ -56,14 +58,14 @@ export function Avatar({ url, onUpload, fallback }: AvatarProps) {
       onUpload(fileName);
 
       toast({
-        title: "上传成功",
-        description: "头像已更新",
+        title: t("avatar.success.title"),
+        description: t("avatar.success.description"),
       });
     } catch (error) {
       console.error("Error uploading avatar:", error);
       toast({
-        title: "上传失败",
-        description: "请稍后重试",
+        title: t("avatar.errors.uploadFailed.title"),
+        description: t("avatar.errors.uploadFailed.description"),
         variant: "destructive",
       });
     } finally {
@@ -74,7 +76,7 @@ export function Avatar({ url, onUpload, fallback }: AvatarProps) {
   return (
     <div className="flex flex-col items-center gap-4">
       <AvatarUI className="h-24 w-24">
-        <AvatarImage src={url || undefined} alt="Avatar" />
+        <AvatarImage src={url || undefined} alt={t("avatar.altText")} />
         <AvatarFallback>{fallback}</AvatarFallback>
       </AvatarUI>
       <div>
@@ -84,7 +86,7 @@ export function Avatar({ url, onUpload, fallback }: AvatarProps) {
             disabled={uploading}
             onClick={() => document.getElementById("avatar-upload")?.click()}
           >
-            {uploading ? "上传中..." : "更换头像"}
+            {uploading ? t("avatar.uploading") : t("avatar.changeAvatar")}
           </Button>
         </label>
         <input

@@ -1,109 +1,91 @@
-"use client";
+// src/app/page.tsx
+"use client"; // 标记为客户端组件
 
-import { Suspense } from "react";
-import { CheckinProvider } from "@/contexts/CheckinContext";
-import { CheckinForm } from "@/components/checkin/CheckinForm";
-import { CheckinCalendar } from "@/components/checkin/CheckinCalendar";
-import { CheckinList } from "@/components/checkin/CheckinList";
-import { SimpleFriendList } from "@/components/friends/SimpleFriendList";
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { Clock, Sunrise, Users, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
+import "@/lib/i18n/i18n";
 
-// 定义Friend接口
-interface Friend {
-  id: string;
-  user1_id: string;
-  user2_id: string;
-  created_at: string;
-  status: string;
-}
+const features = [
+  {
+    icon: Sunrise,
+    titleKey: "features.transformYourLife.title",
+    descriptionKey: "features.transformYourLife.description",
+  },
+  {
+    icon: Users,
+    titleKey: "features.community.title",
+    descriptionKey: "features.community.description",
+  },
+  {
+    icon: Target,
+    titleKey: "features.goalTracking.title",
+    descriptionKey: "features.goalTracking.description",
+  },
+  {
+    icon: Clock,
+    titleKey: "features.dataInsights.title",
+    descriptionKey: "features.dataInsights.description",
+  },
+];
 
 export default function HomePage() {
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const supabase = createClient();
-
-  const fetchFriends = async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    const user = userData?.user;
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from("friends")
-      .select("*")
-      .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
-
-    if (error) {
-      console.error("Error fetching friends:", error);
-      return;
-    }
-
-    setFriends(data || []);
-  };
-
-  useEffect(() => {
-    fetchFriends();
-  }, []);
+  const { t } = useTranslation();
 
   return (
-    <CheckinProvider>
-      <main className="container mx-auto px-4 py-6">
-        <div className="flex">
-          {/* 左侧可折叠好友列表 */}
-          <div
-            className={`transition-all duration-300 ease-in-out ${
-              isCollapsed ? "w-12" : "w-64"
-            } flex-shrink-0 relative`}
-          >
-            {/* 折叠按钮 */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute -right-3 top-2 z-10 bg-white shadow-md rounded-full"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-            >
-              {isCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
+      {/* Hero Section */}
+      <main className="flex-grow flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto pt-20 pb-16">
+          <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
+            {t("welcome", { club: t("club") })}
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 whitespace-pre-line">
+            {t("hero.joinText")}
+          </p>
+          <Link href="/auth">
+            <Button className="bg-sky-600 hover:bg-sky-700 text-white px-8 py-6 text-lg rounded-full transition-all duration-200 transform hover:scale-105">
+              {t("hero.startJourney")}
             </Button>
+          </Link>
+        </div>
 
-            {/* 好友列表内容 */}
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto px-4 py-16">
+          {features.map((feature, index) => (
             <div
-              className={`${
-                isCollapsed ? "opacity-0" : "opacity-100"
-              } transition-opacity duration-300`}
+              key={index}
+              className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300"
             >
-              <Suspense fallback={<div>加载中...</div>}>
-                <SimpleFriendList friends={friends} />
-              </Suspense>
-            </div>
-          </div>
-
-          {/* 主要内容区域 */}
-          <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6 ml-6">
-            {/* 中间内容区 */}
-            <div className="md:col-span-2">
-              <CheckinForm />
-              <div className="mt-6">
-                <Suspense fallback={<div>加载中...</div>}>
-                  <CheckinList />
-                </Suspense>
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="bg-sky-100 p-3 rounded-lg">
+                  <feature.icon className="w-6 h-6 text-sky-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {t(feature.titleKey)}
+                </h3>
               </div>
+              <p className="text-gray-600">{t(feature.descriptionKey)}</p>
             </div>
+          ))}
+        </div>
 
-            {/* 右侧日历 */}
-            <div className="md:col-span-1">
-              <Suspense fallback={<div>加载中...</div>}>
-                <CheckinCalendar />
-              </Suspense>
-            </div>
-          </div>
+        {/* Bottom CTA Section */}
+        <div className="text-center pb-20">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            {t("cta.readyToTransform")}
+          </h2>
+          <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            {t("cta.joinThousands")}
+          </p>
+          <Link href="/auth">
+            <Button className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105">
+              {t("cta.joinNow")}
+            </Button>
+          </Link>
         </div>
       </main>
-    </CheckinProvider>
+    </div>
   );
 }

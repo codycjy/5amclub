@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -18,16 +19,17 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
 
-// Define the form schema type
-const formSchema = z.object({
-  email: z.string().email("请输入有效的邮箱地址"),
-  password: z.string().min(6, "密码至少6个字符"),
-});
-
-// Define the form values type
-type FormValues = z.infer<typeof formSchema>;
-
 export function SignInForm() {
+  const { t } = useTranslation();
+
+  // Define the form schema type with translated messages
+  const formSchema = z.object({
+    email: z.string().email(t("auth.validation.email")),
+    password: z.string().min(6, t("auth.validation.password")),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
+
   const [loading, setLoading] = useState<boolean>(false);
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const router = useRouter();
@@ -55,8 +57,8 @@ export function SignInForm() {
         });
         if (error) throw error;
         toast({
-          title: "注册成功！",
-          description: "请查看邮箱确认注册",
+          title: t("auth.signup.success.title"),
+          description: t("auth.signup.success.description"),
           variant: "default",
         });
       } else {
@@ -66,7 +68,7 @@ export function SignInForm() {
         });
         if (error) throw error;
         toast({
-          title: "登录成功！",
+          title: t("auth.signin.success"),
           variant: "default",
         });
         router.push("/");
@@ -75,12 +77,14 @@ export function SignInForm() {
     } catch (error) {
       console.error("Error:", error);
       toast({
-        title: isSignUp ? "注册失败" : "登录失败",
+        title: isSignUp
+          ? t("auth.signup.error.title")
+          : t("auth.signin.error.title"),
         description:
           error instanceof Error &&
           error.message === "Invalid login credentials"
-            ? "邮箱或密码错误"
-            : "请稍后重试",
+            ? t("auth.signin.error.invalidCredentials")
+            : t("auth.error.tryAgain"),
         variant: "destructive",
       });
     } finally {
@@ -90,21 +94,20 @@ export function SignInForm() {
 
   return (
     <div className="space-y-6">
-      {/* 表单UI部分保持不变 */}
       <div className="flex justify-center gap-4">
         <Button
           type="button"
           variant={isSignUp ? "outline" : "default"}
           onClick={() => setIsSignUp(false)}
         >
-          登录
+          {t("auth.signin.action")}
         </Button>
         <Button
           type="button"
           variant={isSignUp ? "default" : "outline"}
           onClick={() => setIsSignUp(true)}
         >
-          注册
+          {t("auth.signup.action")}
         </Button>
       </div>
 
@@ -115,7 +118,7 @@ export function SignInForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>邮箱</FormLabel>
+                <FormLabel>{t("auth.form.email")}</FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="your@email.com" {...field} />
                 </FormControl>
@@ -128,7 +131,7 @@ export function SignInForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>密码</FormLabel>
+                <FormLabel>{t("auth.form.password")}</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="******" {...field} />
                 </FormControl>
@@ -137,7 +140,11 @@ export function SignInForm() {
             )}
           />
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "处理中..." : isSignUp ? "注册" : "登录"}
+            {loading
+              ? t("auth.form.processing")
+              : isSignUp
+                ? t("auth.signup.action")
+                : t("auth.signin.action")}
           </Button>
         </form>
       </Form>
@@ -145,24 +152,24 @@ export function SignInForm() {
       <div className="text-center text-sm text-muted-foreground">
         {isSignUp ? (
           <>
-            已有账号？{" "}
+            {t("auth.signup.haveAccount")}{" "}
             <Button
               variant="link"
               className="p-0 h-auto"
               onClick={() => setIsSignUp(false)}
             >
-              去登录
+              {t("auth.signup.goToSignIn")}
             </Button>
           </>
         ) : (
           <>
-            还没有账号？{" "}
+            {t("auth.signin.noAccount")}{" "}
             <Button
               variant="link"
               className="p-0 h-auto"
               onClick={() => setIsSignUp(true)}
             >
-              去注册
+              {t("auth.signin.goToSignUp")}
             </Button>
           </>
         )}

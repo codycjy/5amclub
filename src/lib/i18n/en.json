@@ -1,0 +1,256 @@
+{
+  "welcome": "Welcome to the {{club}}",
+  "club": "5AM Club",
+  "hero": {
+    "joinText": "Join an exclusive community of high achievers who start their day at 5AM.\nTransform your mornings, transform your life.",
+    "startJourney": "Start Your Journey"
+  },
+  "features": {
+    "transformYourLife": {
+      "title": "Transform Your Life",
+      "description": "Join the 5AM Club to develop early rising habits, enhance life quality, and achieve personal breakthroughs."
+    },
+    "community": {
+      "title": "Like-minded Community",
+      "description": "Connect with early risers worldwide, inspire each other, and grow together."
+    },
+    "goalTracking": {
+      "title": "Goal Tracking",
+      "description": "Set personal goals, track your wake-up times, and build lasting early rising habits."
+    },
+    "dataInsights": {
+      "title": "Data Insights",
+      "description": "Visualize your progress with intuitive statistics to understand and improve your daily routine."
+    }
+  },
+  "cta": {
+    "readyToTransform": "Ready to Transform Your Morning Routine?",
+    "joinThousands": "Join thousands of successful individuals who have already discovered the power of early rising. Your journey to excellence begins at 5AM.",
+    "joinNow": "Join Now"
+  },
+  "navbar": {
+    "dashboard": "Dashboard",
+    "friends": "Friends",
+    "settings": "Settings"
+  },
+  "checkinCalendar": {
+    "title": "Check-in Calendar",
+    "currentStreak": "Current Streak",
+    "longestStreak": "Longest Streak",
+    "totalCheckins": "Total Check-ins"
+  },
+  "checkinForm": {
+    "title": "Daily Check-in",
+    "moodLabel": "How are you feeling today?",
+    "contentLabel": "Write something",
+    "contentPlaceholder": "Record your mood today...",
+    "submitButton": "Submit",
+    "submitting": "Submitting...",
+    "moods": {
+      "happy": "Happy",
+      "neutral": "Neutral",
+      "sad": "Sad",
+      "angry": "Angry",
+      "thinking": "Thinking"
+    },
+    "validation": {
+      "moodRequired": "Please select a mood",
+      "contentMaxLength": "Content cannot exceed 500 characters"
+    },
+    "toast": {
+      "alreadyCheckedIn": {
+        "title": "Already checked in today!",
+        "description": "Come back tomorrow!"
+      },
+      "success": {
+        "title": "Check-in successful!",
+        "description": "Keep up the good habit of daily recording!"
+      },
+      "error": {
+        "title": "Check-in failed",
+        "description": "Please try again later"
+      }
+    }
+  },
+  "checkinList": {
+    "loading": "Loading...",
+    "title": "Check-in History",
+    "emptyState": "No check-in records yet. Start your first check-in!",
+    "dateFormat": {
+      "weekday": "long",
+      "year": "numeric",
+      "month": "numeric",
+      "day": "numeric"
+    },
+    "timeFormat": {
+      "hour": "2-digit",
+      "minute": "2-digit"
+    }
+  },
+  "friendList": {
+    "title": "Your Friends",
+    "noFriends": "You don't have any friends yet.",
+    "unknownUser": "Unknown User",
+    "stats": {
+      "currentStreak": "Current Streak: {{count}} days",
+      "longestStreak": "Longest Streak: {{count}} days",
+      "totalCheckins": "Total Check-ins: {{count}}"
+    },
+    "removeButton": "Remove",
+    "toast": {
+      "removeSuccess": {
+        "title": "Friend Removed",
+        "description": "You have successfully removed this friend"
+      },
+      "removeError": {
+        "title": "Removal Failed",
+        "description": "An error occurred while removing the friend"
+      }
+    }
+  },
+  "friendRequests": {
+    "title": "Friend Requests",
+    "noRequests": "You don't have any friend requests at the moment.",
+    "acceptButton": "Accept",
+    "rejectButton": "Reject",
+    "unknownUser": "Unknown User",
+    "toast": {
+      "accepted": "Friend request accepted",
+      "rejected": "Friend request rejected"
+    }
+  },
+  "sendFriendRequest": {
+    "placeholder": "Enter username to send friend request",
+    "sendButton": "Send",
+    "sending": "Sending...",
+    "toast": {
+      "invalidUsername": {
+        "title": "Please enter a valid username"
+      },
+      "notLoggedIn": {
+        "title": "Not logged in",
+        "description": "Please log in first"
+      },
+      "getUserError": {
+        "title": "Failed to get user information",
+        "description": "Please try again later"
+      },
+      "userNotFound": {
+        "title": "User not found",
+        "description": "Please check the username"
+      },
+      "sendError": {
+        "title": "Failed to send friend request",
+        "description": "Please try again later"
+      },
+      "success": {
+        "title": "Friend request sent"
+      }
+    }
+  },
+  "friends": {
+    "list": {
+      "title": "Friends List",
+      "noFriends": "No friends yet",
+      "avatarAlt": "{{username}}'s avatar",
+      "unknownUser": "Unknown User",
+      "unknownUserInitial": "U",
+      "streakCount": "{{count}} day streak"
+    }
+  },
+
+  "settings": {
+    "title": "Personal Settings",
+    "loading": "Loading...",
+    "form": {
+      "validation": {
+        "username": "Username must be 3-20 characters and can only contain letters, numbers, underscores, and hyphens",
+        "timeRange": "Check-in time range must be at least 1 hour"
+      },
+      "labels": {
+        "username": "Username (Optional)",
+        "startTime": "Check-in Start Time",
+        "endTime": "Check-in End Time"
+      },
+      "placeholders": {
+        "username": "Set your username"
+      },
+      "descriptions": {
+        "username": "Set a unique username. Currently showing as: {{current}}"
+      },
+      "avatarDescription": "Avatar is optional, email initial will be shown if not uploaded",
+      "timezone": "Current timezone: {{timezone}}",
+      "save": "Save Settings",
+      "saving": "Saving..."
+    },
+    "success": {
+      "title": "Settings Saved",
+      "description": "Your personal information has been updated"
+    },
+    "errors": {
+      "userNotFound": "User not found",
+      "usernameTaken": {
+        "title": "Username already taken",
+        "description": "Please choose another username"
+      },
+      "save": {
+        "title": "Save Failed",
+        "description": "Please try again later"
+      }
+    }
+  },
+  "avatar": {
+    "altText": "Avatar",
+    "changeAvatar": "Change Avatar",
+    "uploading": "Uploading...",
+    "success": {
+      "title": "Upload Successful",
+      "description": "Avatar has been updated"
+    },
+    "errors": {
+      "invalidType": "Please upload an image file",
+      "fileSize": "File size cannot exceed 5MB",
+      "userNotFound": "User not found",
+      "uploadFailed": {
+        "title": "Upload Failed",
+        "description": "Please try again later"
+      }
+    }
+  },
+  "auth": {
+    "validation": {
+      "email": "Please enter a valid email address",
+      "password": "Password must be at least 6 characters"
+    },
+    "form": {
+      "email": "Email",
+      "password": "Password",
+      "processing": "Processing..."
+    },
+    "signin": {
+      "action": "Sign In",
+      "success": "Sign in successful!",
+      "error": {
+        "title": "Sign in failed",
+        "invalidCredentials": "Invalid email or password"
+      },
+      "noAccount": "Don't have an account?",
+      "goToSignUp": "Sign Up"
+    },
+    "signup": {
+      "action": "Sign Up",
+      "success": {
+        "title": "Registration successful!",
+        "description": "Please check your email to confirm registration"
+      },
+      "error": {
+        "title": "Registration failed"
+      },
+      "haveAccount": "Already have an account?",
+      "goToSignIn": "Sign In"
+    },
+    "error": {
+      "tryAgain": "Please try again later"
+    }
+  }
+}

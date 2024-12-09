@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface SendFriendRequestProps {
   onRequestSent: () => void;
@@ -13,6 +14,7 @@ interface SendFriendRequestProps {
 export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
   onRequestSent,
 }) => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
@@ -20,7 +22,7 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
   const handleSendRequest = async () => {
     if (!email) {
       toast({
-        title: "请输入有效的用户名",
+        title: t("sendFriendRequest.toast.invalidUsername.title"),
         variant: "destructive",
       });
       return;
@@ -28,37 +30,17 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
 
     setLoading(true);
 
-    // 获取当前用户ID
     const currentUser = (await supabase.auth.getUser()).data.user;
     if (!currentUser) {
       toast({
-        title: "未登录",
-        description: "请先登录后再操作",
+        title: t("sendFriendRequest.toast.notLoggedIn.title"),
+        description: t("sendFriendRequest.toast.notLoggedIn.description"),
         variant: "destructive",
       });
       setLoading(false);
       return;
     }
 
-    // 获取当前用户的用户名
-    const { data: currentUserData, error: currentUserError } = await supabase
-      .from("user_settings")
-      .select("username")
-      .eq("user_id", currentUser.id)
-      .maybeSingle();
-
-    if (currentUserError || !currentUserData) {
-      console.error("Error getting current user:", currentUserError);
-      toast({
-        title: "获取用户信息失败",
-        description: "请稍后重试",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    // 获取接收者用户 ID
     const { data: userSettings, error: userError } = await supabase
       .from("user_settings")
       .select("user_id, username")
@@ -68,8 +50,8 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
     if (userError || !userSettings) {
       console.error("Error finding user:", userError, email);
       toast({
-        title: "找不到该用户",
-        description: "请检查用户名是否正确",
+        title: t("sendFriendRequest.toast.userNotFound.title"),
+        description: t("sendFriendRequest.toast.userNotFound.description"),
         variant: "destructive",
       });
       setLoading(false);
@@ -78,24 +60,23 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
 
     const receiverId = userSettings.user_id;
 
-    // 创建好友请求
     const { error } = await supabase.from("friend_requests").insert({
       sender_id: currentUser.id,
       receiver_id: receiverId,
-      sender_username: currentUserData.username,
+      sender_username: userSettings.username,
       status: "pending",
     });
 
     if (error) {
       console.error("Error sending friend request:", error);
       toast({
-        title: "发送好友请求失败",
-        description: "请稍后重试",
+        title: t("sendFriendRequest.toast.sendError.title"),
+        description: t("sendFriendRequest.toast.sendError.description"),
         variant: "destructive",
       });
     } else {
       toast({
-        title: "已发送好友请求",
+        title: t("sendFriendRequest.toast.success.title"),
         variant: "default",
       });
       setEmail("");
@@ -109,12 +90,14 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
     <div className="flex items-center gap-2">
       <Input
         type="text"
-        placeholder="输入用户名发送好友请求"
+        placeholder={t("sendFriendRequest.placeholder")}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <Button onClick={handleSendRequest} disabled={loading}>
-        {loading ? "发送中..." : "发送"}
+        {loading
+          ? t("sendFriendRequest.sending")
+          : t("sendFriendRequest.sendButton")}
       </Button>
     </div>
   );

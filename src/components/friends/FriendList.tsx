@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface FriendInfo {
   user_id: string;
@@ -23,7 +24,9 @@ interface FriendInfo {
 interface FriendListProps {
   friends: any[];
 }
+
 export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
+  const { t } = useTranslation();
   const supabase = createClient();
   const [friendsInfo, setFriendsInfo] = useState<FriendInfo[]>([]);
 
@@ -44,12 +47,10 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
     const user = userData?.user;
     if (!user) return;
 
-    // 获取好友的 user_id
     const friendIds = friends.map((friend) =>
-      friend.user1_id === user.id ? friend.user2_id : friend.user1_id
+      friend.user1_id === user.id ? friend.user2_id : friend.user1_id,
     );
 
-    // 获取好友的基本信息
     const { data } = await supabase
       .from("user_settings")
       .select("user_id, username, avatar_url")
@@ -57,7 +58,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
 
     const { data: streakData, error: streakError } = await supabase.rpc(
       "get_all_friend_streak",
-      { in_user_id: user.id }
+      { in_user_id: user.id },
     );
 
     if (streakError) {
@@ -65,7 +66,6 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
       return;
     }
 
-    // 为每个头像获取签名URL
     const friendsWithSignedUrls = await Promise.all(
       (data || []).map(async (friend) => {
         let signed_avatar_url;
@@ -73,9 +73,8 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
           signed_avatar_url = await getSignedUrl(friend.avatar_url);
         }
 
-        // 查找对应的打卡信息
         const streakInfo = streakData?.find(
-          (streak: any) => streak.user_id === friend.user_id
+          (streak: any) => streak.user_id === friend.user_id,
         );
 
         return {
@@ -85,7 +84,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
           longest_streak: streakInfo?.longest_streak || 0,
           total_checkins: streakInfo?.total_checkins || 0,
         };
-      })
+      }),
     );
 
     setFriendsInfo(friendsWithSignedUrls);
@@ -99,35 +98,35 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
     const { data: userData } = await supabase.auth.getUser();
     const user = userData?.user;
     if (!user) return;
-  
-    // 调用我们创建的删除好友函数
-    const { error } = await supabase.rpc('delete_friendship', {
-      friend_id: friendId
+
+    const { error } = await supabase.rpc("delete_friendship", {
+      friend_id: friendId,
     });
-  
+
     if (error) {
       console.error("Error deleting friend:", error);
       toast({
-        title: "删除失败",
-        description: "删除好友时发生错误",
+        title: t("friendList.toast.removeError.title"),
+        description: t("friendList.toast.removeError.description"),
         variant: "destructive",
       });
     } else {
       toast({
-        title: "好友删除成功",
-        description: "你已经成功删除了这个好友",
+        title: t("friendList.toast.removeSuccess.title"),
+        description: t("friendList.toast.removeSuccess.description"),
         variant: "default",
       });
-      // 从当前列表中移除这个好友
-      setFriendsInfo(prev => prev.filter(friend => friend.user_id !== friendId));
+      setFriendsInfo((prev) =>
+        prev.filter((friend) => friend.user_id !== friendId),
+      );
     }
   };
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">你的好友</h2>
+      <h2 className="text-xl font-semibold mb-2">{t("friendList.title")}</h2>
       {friendsInfo.length === 0 ? (
-        <p>你还没有好友。</p>
+        <p>{t("friendList.noFriends")}</p>
       ) : (
         <ul className="space-y-4">
           {friendsInfo.map((friend) => (
@@ -139,7 +138,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
                 <AvatarUI className="h-10 w-10">
                   <AvatarImage
                     src={friend.signed_avatar_url}
-                    alt={friend.username || "用户头像"}
+                    alt={friend.username || t("friendList.unknownUser")}
                   />
                   <AvatarFallback>
                     {friend.username?.[0]?.toUpperCase() || "U"}
@@ -147,16 +146,22 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
                 </AvatarUI>
                 <div>
                   <span className="font-medium">
-                    {friend.username || "未知用户"}
+                    {friend.username || t("friendList.unknownUser")}
                   </span>
                   <div className="text-sm text-gray-600">
-                    当前连续打卡: {friend.current_streak} 天
+                    {t("friendList.stats.currentStreak", {
+                      count: friend.current_streak,
+                    })}
                   </div>
                   <div className="text-sm text-gray-600">
-                    最长连续打卡: {friend.longest_streak} 天
+                    {t("friendList.stats.longestStreak", {
+                      count: friend.longest_streak,
+                    })}
                   </div>
                   <div className="text-sm text-gray-600">
-                    总打卡次数: {friend.total_checkins} 次
+                    {t("friendList.stats.totalCheckins", {
+                      count: friend.total_checkins,
+                    })}
                   </div>
                 </div>
               </div>
@@ -165,7 +170,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
                 size="sm"
                 onClick={() => handleRemoveFriend(friend.user_id)}
               >
-                删除
+                {t("friendList.removeButton")}
               </Button>
             </li>
           ))}
