@@ -66,7 +66,9 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
   if (incomingRequests.length === 0) {
     return (
       <div>
-        <h2 className="text-xl font-semibold mb-2">{t("friendRequests.title")}</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          {t("friendRequests.title")}
+        </h2>
         <p>{t("friendRequests.noRequests")}</p>
       </div>
     );
@@ -74,7 +76,9 @@ export const FriendRequests: React.FC<FriendRequestsProps> = ({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">{t("friendRequests.title")}</h2>
+      <h2 className="text-xl font-semibold mb-2">
+        {t("friendRequests.title")}
+      </h2>
       <ul className="space-y-4">
         {incomingRequests.map((request) => (
           <li
@@ -157,9 +161,9 @@ const FriendRequestItem: React.FC<{ request: any }> = ({ request }) => {
   return (
     <div className="flex items-center gap-3">
       <AvatarUI className="h-10 w-10">
-        <AvatarImage 
-          src={avatarUrl} 
-          alt={senderInfo?.username || t("friendRequests.unknownUser")} 
+        <AvatarImage
+          src={avatarUrl}
+          alt={senderInfo?.username || t("friendRequests.unknownUser")}
         />
         <AvatarFallback>
           {senderInfo?.username?.[0]?.toUpperCase() || "U"}

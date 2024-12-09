@@ -47,11 +47,11 @@
     "submitButton": "Submit",
     "submitting": "Submitting...",
     "moods": {
-      "happy": "😊 Happy",
-      "neutral": "😐 Neutral",
-      "sad": "😢 Sad",
-      "angry": "😡 Angry",
-      "thinking": "🤔 Thinking"
+      "happy": "Happy",
+      "neutral": "Neutral",
+      "sad": "Sad",
+      "angry": "Angry",
+      "thinking": "Thinking"
     },
     "validation": {
       "moodRequired": "Please select a mood",

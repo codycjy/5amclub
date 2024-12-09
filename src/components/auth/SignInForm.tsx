@@ -21,11 +21,11 @@ import { createClient } from "@/lib/supabase/client";
 
 export function SignInForm() {
   const { t } = useTranslation();
-  
+
   // Define the form schema type with translated messages
   const formSchema = z.object({
-    email: z.string().email(t('auth.validation.email')),
-    password: z.string().min(6, t('auth.validation.password')),
+    email: z.string().email(t("auth.validation.email")),
+    password: z.string().min(6, t("auth.validation.password")),
   });
 
   type FormValues = z.infer<typeof formSchema>;
@@ -57,8 +57,8 @@ export function SignInForm() {
         });
         if (error) throw error;
         toast({
-          title: t('auth.signup.success.title'),
-          description: t('auth.signup.success.description'),
+          title: t("auth.signup.success.title"),
+          description: t("auth.signup.success.description"),
           variant: "default",
         });
       } else {
@@ -68,7 +68,7 @@ export function SignInForm() {
         });
         if (error) throw error;
         toast({
-          title: t('auth.signin.success'),
+          title: t("auth.signin.success"),
           variant: "default",
         });
         router.push("/");
@@ -77,12 +77,14 @@ export function SignInForm() {
     } catch (error) {
       console.error("Error:", error);
       toast({
-        title: isSignUp ? t('auth.signup.error.title') : t('auth.signin.error.title'),
+        title: isSignUp
+          ? t("auth.signup.error.title")
+          : t("auth.signin.error.title"),
         description:
           error instanceof Error &&
           error.message === "Invalid login credentials"
-            ? t('auth.signin.error.invalidCredentials')
-            : t('auth.error.tryAgain'),
+            ? t("auth.signin.error.invalidCredentials")
+            : t("auth.error.tryAgain"),
         variant: "destructive",
       });
     } finally {
@@ -98,14 +100,14 @@ export function SignInForm() {
           variant={isSignUp ? "outline" : "default"}
           onClick={() => setIsSignUp(false)}
         >
-          {t('auth.signin.action')}
+          {t("auth.signin.action")}
         </Button>
         <Button
           type="button"
           variant={isSignUp ? "default" : "outline"}
           onClick={() => setIsSignUp(true)}
         >
-          {t('auth.signup.action')}
+          {t("auth.signup.action")}
         </Button>
       </div>
 
@@ -116,7 +118,7 @@ export function SignInForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.form.email')}</FormLabel>
+                <FormLabel>{t("auth.form.email")}</FormLabel>
                 <FormControl>
                   <Input type="email" placeholder="your@email.com" {...field} />
                 </FormControl>
@@ -129,7 +131,7 @@ export function SignInForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth.form.password')}</FormLabel>
+                <FormLabel>{t("auth.form.password")}</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="******" {...field} />
                 </FormControl>
@@ -138,11 +140,11 @@ export function SignInForm() {
             )}
           />
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading 
-              ? t('auth.form.processing')
-              : isSignUp 
-                ? t('auth.signup.action')
-                : t('auth.signin.action')}
+            {loading
+              ? t("auth.form.processing")
+              : isSignUp
+                ? t("auth.signup.action")
+                : t("auth.signin.action")}
           </Button>
         </form>
       </Form>
@@ -150,24 +152,24 @@ export function SignInForm() {
       <div className="text-center text-sm text-muted-foreground">
         {isSignUp ? (
           <>
-            {t('auth.signup.haveAccount')}{" "}
+            {t("auth.signup.haveAccount")}{" "}
             <Button
               variant="link"
               className="p-0 h-auto"
               onClick={() => setIsSignUp(false)}
             >
-              {t('auth.signup.goToSignIn')}
+              {t("auth.signup.goToSignIn")}
             </Button>
           </>
         ) : (
           <>
-            {t('auth.signin.noAccount')}{" "}
+            {t("auth.signin.noAccount")}{" "}
             <Button
               variant="link"
               className="p-0 h-auto"
               onClick={() => setIsSignUp(true)}
             >
-              {t('auth.signin.goToSignUp')}
+              {t("auth.signin.goToSignUp")}
             </Button>
           </>
         )}

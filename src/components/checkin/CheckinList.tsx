@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { useCheckins } from "@/contexts/CheckinContext";
+import { MoodType, moodEmojis } from "@/types/checkins";
 
 export function CheckinList() {
   const { t, i18n } = useTranslation();
@@ -56,6 +57,17 @@ export function CheckinList() {
     }
   };
 
+  const getMoodLabel = (mood: MoodType) => {
+    const moodKeys: Record<MoodType, string> = {
+      [MoodType.HAPPY]: "happy",
+      [MoodType.NEUTRAL]: "neutral",
+      [MoodType.SAD]: "sad",
+      [MoodType.ANGRY]: "angry",
+      [MoodType.THINKING]: "thinking",
+    };
+    return `${moodEmojis[mood]} ${t(`checkinForm.moods.${moodKeys[mood]}`)}`;
+  };
+
   if (loading) {
     return <div>{t("checkinList.loading")}</div>;
   }
@@ -77,17 +89,20 @@ export function CheckinList() {
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 <span>{formatDate(checkin.created_at)}</span>
-                <span>{checkin.mood}</span>
+                <span>{getMoodLabel(checkin.mood as MoodType)}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-wrap">{checkin.content}</p>
               <p className="text-xs text-gray-500 mt-2">
-                {new Date(checkin.created_at).toLocaleTimeString(i18n.language, {
-                  timeZone: userTimezone,
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {new Date(checkin.created_at).toLocaleTimeString(
+                  i18n.language,
+                  {
+                    timeZone: userTimezone,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )}
               </p>
             </CardContent>
           </Card>

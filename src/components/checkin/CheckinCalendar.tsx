@@ -57,7 +57,7 @@ export function CheckinCalendar() {
         value={value}
         tileClassName={({ date }) => {
           const dateStr = new Date(
-            date.getTime() - date.getTimezoneOffset() * 60000
+            date.getTime() - date.getTimezoneOffset() * 60000,
           )
             .toISOString()
             .split("T")[0];

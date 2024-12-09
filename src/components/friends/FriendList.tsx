@@ -48,7 +48,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
     if (!user) return;
 
     const friendIds = friends.map((friend) =>
-      friend.user1_id === user.id ? friend.user2_id : friend.user1_id
+      friend.user1_id === user.id ? friend.user2_id : friend.user1_id,
     );
 
     const { data } = await supabase
@@ -58,7 +58,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
 
     const { data: streakData, error: streakError } = await supabase.rpc(
       "get_all_friend_streak",
-      { in_user_id: user.id }
+      { in_user_id: user.id },
     );
 
     if (streakError) {
@@ -74,7 +74,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
         }
 
         const streakInfo = streakData?.find(
-          (streak: any) => streak.user_id === friend.user_id
+          (streak: any) => streak.user_id === friend.user_id,
         );
 
         return {
@@ -84,7 +84,7 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
           longest_streak: streakInfo?.longest_streak || 0,
           total_checkins: streakInfo?.total_checkins || 0,
         };
-      })
+      }),
     );
 
     setFriendsInfo(friendsWithSignedUrls);
@@ -99,8 +99,8 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
     const user = userData?.user;
     if (!user) return;
 
-    const { error } = await supabase.rpc('delete_friendship', {
-      friend_id: friendId
+    const { error } = await supabase.rpc("delete_friendship", {
+      friend_id: friendId,
     });
 
     if (error) {
@@ -116,7 +116,9 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
         description: t("friendList.toast.removeSuccess.description"),
         variant: "default",
       });
-      setFriendsInfo(prev => prev.filter(friend => friend.user_id !== friendId));
+      setFriendsInfo((prev) =>
+        prev.filter((friend) => friend.user_id !== friendId),
+      );
     }
   };
 
@@ -147,13 +149,19 @@ export const FriendList: React.FC<FriendListProps> = ({ friends }) => {
                     {friend.username || t("friendList.unknownUser")}
                   </span>
                   <div className="text-sm text-gray-600">
-                    {t("friendList.stats.currentStreak", { count: friend.current_streak })}
+                    {t("friendList.stats.currentStreak", {
+                      count: friend.current_streak,
+                    })}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {t("friendList.stats.longestStreak", { count: friend.longest_streak })}
+                    {t("friendList.stats.longestStreak", {
+                      count: friend.longest_streak,
+                    })}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {t("friendList.stats.totalCheckins", { count: friend.total_checkins })}
+                    {t("friendList.stats.totalCheckins", {
+                      count: friend.total_checkins,
+                    })}
                   </div>
                 </div>
               </div>

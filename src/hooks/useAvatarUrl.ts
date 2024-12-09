@@ -1,6 +1,6 @@
 // Create a new custom hook (e.g., in hooks/useAvatarUrl.ts)
-import { useState, useEffect, useMemo } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect, useMemo } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export function useAvatarUrl(avatarPath: string | null) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
@@ -11,7 +11,7 @@ export function useAvatarUrl(avatarPath: string | null) {
     return async () => {
       if (avatarPath) {
         const { data } = await supabase.storage
-          .from('avatars')
+          .from("avatars")
           .createSignedUrl(avatarPath, 3600);
 
         if (data) {
@@ -23,10 +23,10 @@ export function useAvatarUrl(avatarPath: string | null) {
 
   useEffect(() => {
     getSignedUrl();
-    
+
     // Set up a refresh interval (optional - to refresh before URL expires)
     const interval = setInterval(getSignedUrl, 3000000); // Refresh every 50 minutes
-    
+
     return () => clearInterval(interval);
   }, [getSignedUrl]);
 

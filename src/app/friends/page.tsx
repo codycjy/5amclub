@@ -78,7 +78,7 @@ export default function FriendsPage() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "friends" },
-        () => fetchFriends()
+        () => fetchFriends(),
       )
       .subscribe();
 
@@ -87,7 +87,7 @@ export default function FriendsPage() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "friend_requests" },
-        () => fetchFriendRequests()
+        () => fetchFriendRequests(),
       )
       .subscribe();
 

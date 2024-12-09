@@ -38,16 +38,20 @@ export function SettingsForm() {
     .object({
       username: z
         .string()
-        .transform(str => str === '' ? null : str)
+        .transform((str) => (str === "" ? null : str))
         .nullable()
         .refine(
           (val) => {
             if (val === null) return true;
-            return val.length >= 3 && val.length <= 20 && /^[a-zA-Z0-9_-]+$/.test(val);
+            return (
+              val.length >= 3 &&
+              val.length <= 20 &&
+              /^[a-zA-Z0-9_-]+$/.test(val)
+            );
           },
           {
-            message: t('settings.form.validation.username')
-          }
+            message: t("settings.form.validation.username"),
+          },
         ),
       checkin_start_time: z.string(),
       checkin_end_time: z.string(),
@@ -60,9 +64,9 @@ export function SettingsForm() {
         return end.getTime() - start.getTime() >= 3600000;
       },
       {
-        message: t('settings.form.validation.timeRange'),
+        message: t("settings.form.validation.timeRange"),
         path: ["checkin_end_time"],
-      }
+      },
     );
 
   type FormValues = z.infer<typeof formSchema>;
@@ -107,7 +111,7 @@ export function SettingsForm() {
           if (settings.avatar_url) {
             setAvatarPath(settings.avatar_url);
           }
-          
+
           form.reset({
             username: settings.username || null,
             checkin_start_time: settings.checkin_start_time,
@@ -118,8 +122,8 @@ export function SettingsForm() {
       } catch (error) {
         console.error("Error loading settings:", error);
         toast({
-          title: t('settings.errors.load.title'),
-          description: t('settings.errors.load.description'),
+          title: t("settings.errors.load.title"),
+          description: t("settings.errors.load.description"),
           variant: "destructive",
         });
       } finally {
@@ -138,9 +142,9 @@ export function SettingsForm() {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) throw new Error(t('settings.errors.userNotFound'));
+      if (!user) throw new Error(t("settings.errors.userNotFound"));
 
-      if (values.username && values.username.trim() !== '') {
+      if (values.username && values.username.trim() !== "") {
         const { data: existingUser } = await supabase
           .from("user_settings")
           .select("username")
@@ -150,8 +154,8 @@ export function SettingsForm() {
 
         if (existingUser) {
           toast({
-            title: t('settings.errors.usernameTaken.title'),
-            description: t('settings.errors.usernameTaken.description'),
+            title: t("settings.errors.usernameTaken.title"),
+            description: t("settings.errors.usernameTaken.description"),
             variant: "destructive",
           });
           setLoading(false);
@@ -162,7 +166,10 @@ export function SettingsForm() {
       const { error } = await supabase.from("user_settings").upsert(
         {
           user_id: user.id,
-          username: values.username && values.username.trim() !== '' ? values.username : null,
+          username:
+            values.username && values.username.trim() !== ""
+              ? values.username
+              : null,
           checkin_start_time: values.checkin_start_time,
           checkin_end_time: values.checkin_end_time,
           timezone: userTimezone,
@@ -171,22 +178,22 @@ export function SettingsForm() {
         },
         {
           onConflict: "user_id",
-        }
+        },
       );
 
       if (error) throw error;
 
       toast({
-        title: t('settings.success.title'),
-        description: t('settings.success.description'),
+        title: t("settings.success.title"),
+        description: t("settings.success.description"),
       });
 
       router.refresh();
     } catch (error) {
       console.error("Error saving settings:", error);
       toast({
-        title: t('settings.errors.save.title'),
-        description: t('settings.errors.save.description'),
+        title: t("settings.errors.save.title"),
+        description: t("settings.errors.save.description"),
         variant: "destructive",
       });
     } finally {
@@ -198,7 +205,7 @@ export function SettingsForm() {
     return (
       <Card>
         <CardContent className="p-6">
-          <div>{t('settings.loading')}</div>
+          <div>{t("settings.loading")}</div>
         </CardContent>
       </Card>
     );
@@ -207,22 +214,22 @@ export function SettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('settings.title')}</CardTitle>
+        <CardTitle>{t("settings.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="flex flex-col items-center gap-4 mb-6">
-            <Avatar
-    url={avatarUrl}
-    onUpload={async (fileName) => {
-      setAvatarPath(fileName);
-      form.setValue("avatar_url", fileName);
-    }}
-    fallback={userEmail?.[0]?.toUpperCase()}
-  />
+              <Avatar
+                url={avatarUrl}
+                onUpload={async (fileName) => {
+                  setAvatarPath(fileName);
+                  form.setValue("avatar_url", fileName);
+                }}
+                fallback={userEmail?.[0]?.toUpperCase()}
+              />
               <FormDescription>
-                {t('settings.form.avatarDescription')}
+                {t("settings.form.avatarDescription")}
               </FormDescription>
             </div>
 
@@ -231,17 +238,17 @@ export function SettingsForm() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('settings.form.labels.username')}</FormLabel>
+                  <FormLabel>{t("settings.form.labels.username")}</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder={t('settings.form.placeholders.username')}
-                      {...field} 
-                      value={field.value || ''} 
+                    <Input
+                      placeholder={t("settings.form.placeholders.username")}
+                      {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormDescription>
-                    {t('settings.form.descriptions.username', {
-                      current: field.value || userEmail
+                    {t("settings.form.descriptions.username", {
+                      current: field.value || userEmail,
                     })}
                   </FormDescription>
                   <FormMessage />
@@ -254,7 +261,7 @@ export function SettingsForm() {
               name="checkin_start_time"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('settings.form.labels.startTime')}</FormLabel>
+                  <FormLabel>{t("settings.form.labels.startTime")}</FormLabel>
                   <FormControl>
                     <Input type="time" {...field} />
                   </FormControl>
@@ -268,7 +275,7 @@ export function SettingsForm() {
               name="checkin_end_time"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('settings.form.labels.endTime')}</FormLabel>
+                  <FormLabel>{t("settings.form.labels.endTime")}</FormLabel>
                   <FormControl>
                     <Input type="time" {...field} />
                   </FormControl>
@@ -278,13 +285,13 @@ export function SettingsForm() {
             />
 
             <div className="text-sm text-muted-foreground">
-              {t('settings.form.timezone', {
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+              {t("settings.form.timezone", {
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
               })}
             </div>
 
             <Button type="submit" disabled={loading}>
-              {loading ? t('settings.form.saving') : t('settings.form.save')}
+              {loading ? t("settings.form.saving") : t("settings.form.save")}
             </Button>
           </form>
         </Form>

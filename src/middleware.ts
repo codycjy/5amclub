@@ -31,23 +31,23 @@ export async function middleware(req: NextRequest) {
           });
         },
       },
-    }
+    },
   );
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  
+
   // 受保护的路由列表
   const protectedRoutes = ["/app", "/settings", "/friends"];
   // API 路由列表
   const apiRoutes = ["/api"];
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route)
+    req.nextUrl.pathname.startsWith(route),
   );
   const isApiRoute = apiRoutes.some((route) =>
-    req.nextUrl.pathname.startsWith(route)
+    req.nextUrl.pathname.startsWith(route),
   );
 
   // 如果是 API 路由，直接放行

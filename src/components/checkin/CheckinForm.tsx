@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 import { useCheckins } from "@/contexts/CheckinContext";
+import { MoodType, moodEmojis } from "@/types/checkins";
 
 interface IpInfoResponse {
   ip: string;
@@ -45,14 +46,16 @@ export function CheckinForm() {
   const { refreshCheckins, refreshCalendarData } = useCheckins();
 
   const formSchema = z.object({
-    mood: z.string().min(1, t("checkinForm.validation.moodRequired")),
+    mood: z.nativeEnum(MoodType, {
+      errorMap: () => ({ message: t("checkinForm.validation.moodRequired") }),
+    }),
     content: z.string().max(500, t("checkinForm.validation.contentMaxLength")),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      mood: "",
+      mood: undefined,
       content: "",
     },
   });
@@ -60,7 +63,7 @@ export function CheckinForm() {
   const fetchWithTimeout = async (
     url: string,
     timeout: number,
-    headers: HeadersInit = {}
+    headers: HeadersInit = {},
   ): Promise<Response> => {
     const controller = new AbortController();
     const promise = fetch(url, { signal: controller.signal, headers: headers });
@@ -98,7 +101,7 @@ export function CheckinForm() {
 
       const locationResponse = await fetchWithTimeout(
         `https://ipapi.co/json/`,
-        5000
+        5000,
       );
       const locationData: IpInfoResponse = await locationResponse.json();
 
@@ -162,13 +165,12 @@ export function CheckinForm() {
   };
 
   const moods = [
-    t("checkinForm.moods.happy"),
-    t("checkinForm.moods.neutral"),
-    t("checkinForm.moods.sad"),
-    t("checkinForm.moods.angry"),
-    t("checkinForm.moods.thinking"),
+    { type: MoodType.HAPPY, label: t("checkinForm.moods.happy") },
+    { type: MoodType.NEUTRAL, label: t("checkinForm.moods.neutral") },
+    { type: MoodType.SAD, label: t("checkinForm.moods.sad") },
+    { type: MoodType.ANGRY, label: t("checkinForm.moods.angry") },
+    { type: MoodType.THINKING, label: t("checkinForm.moods.thinking") },
   ];
-
   return (
     <Card>
       <CardHeader>
@@ -184,14 +186,14 @@ export function CheckinForm() {
                 <FormItem>
                   <FormLabel>{t("checkinForm.moodLabel")}</FormLabel>
                   <div className="flex gap-2 flex-wrap">
-                    {moods.map((mood) => (
+                    {moods.map(({ type, label }) => (
                       <Button
-                        key={mood}
+                        key={type}
                         type="button"
-                        variant={field.value === mood ? "default" : "outline"}
-                        onClick={() => field.onChange(mood)}
+                        variant={field.value === type ? "default" : "outline"}
+                        onClick={() => field.onChange(type)}
                       >
-                        {mood}
+                        {moodEmojis[type]} {label}
                       </Button>
                     ))}
                   </div>

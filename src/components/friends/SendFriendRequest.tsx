@@ -112,7 +112,9 @@ export const SendFriendRequest: React.FC<SendFriendRequestProps> = ({
         onChange={(e) => setEmail(e.target.value)}
       />
       <Button onClick={handleSendRequest} disabled={loading}>
-        {loading ? t("sendFriendRequest.sending") : t("sendFriendRequest.sendButton")}
+        {loading
+          ? t("sendFriendRequest.sending")
+          : t("sendFriendRequest.sendButton")}
       </Button>
     </div>
   );

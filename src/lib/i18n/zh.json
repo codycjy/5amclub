@@ -47,11 +47,11 @@
     "submitButton": "提交打卡",
     "submitting": "提交中...",
     "moods": {
-      "happy": "😊 开心",
-      "neutral": "😐 一般",
-      "sad": "😢 难过",
-      "angry": "😡 生气",
-      "thinking": "🤔 思考"
+      "happy": "开心",
+      "neutral": "一般",
+      "sad": "难过",
+      "angry": "生气",
+      "thinking": "思考"
     },
     "validation": {
       "moodRequired": "请选择心情",

@@ -46,7 +46,7 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
     if (!user) return;
 
     const friendIds = friends.map((friend) =>
-      friend.user1_id === user.id ? friend.user2_id : friend.user1_id
+      friend.user1_id === user.id ? friend.user2_id : friend.user1_id,
     );
 
     const { data } = await supabase
@@ -56,7 +56,7 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
 
     const { data: streakData, error: streakError } = await supabase.rpc(
       "get_all_friend_streak",
-      { in_user_id: user.id }
+      { in_user_id: user.id },
     );
 
     if (streakError) {
@@ -72,7 +72,7 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
         }
 
         const streakInfo = streakData?.find(
-          (streak: any) => streak.user_id === friend.user_id
+          (streak: any) => streak.user_id === friend.user_id,
         );
 
         return {
@@ -82,7 +82,7 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
           longest_streak: streakInfo?.longest_streak || 0,
           total_checkins: streakInfo?.total_checkins || 0,
         };
-      })
+      }),
     );
 
     setFriendsInfo(friendsWithSignedUrls);
@@ -94,9 +94,9 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">{t('friends.list.title')}</h2>
+      <h2 className="text-xl font-semibold mb-4">{t("friends.list.title")}</h2>
       {friendsInfo.length === 0 ? (
-        <p className="text-gray-500">{t('friends.list.noFriends')}</p>
+        <p className="text-gray-500">{t("friends.list.noFriends")}</p>
       ) : (
         <ul className="space-y-3">
           {friendsInfo.map((friend) => (
@@ -107,18 +107,23 @@ export const SimpleFriendList: React.FC<FriendListProps> = ({ friends }) => {
               <AvatarUI className="h-8 w-8">
                 <AvatarImage
                   src={friend.signed_avatar_url}
-                  alt={t('friends.list.avatarAlt', { username: friend.username })}
+                  alt={t("friends.list.avatarAlt", {
+                    username: friend.username,
+                  })}
                 />
                 <AvatarFallback>
-                  {friend.username?.[0]?.toUpperCase() || t('friends.list.unknownUserInitial')}
+                  {friend.username?.[0]?.toUpperCase() ||
+                    t("friends.list.unknownUserInitial")}
                 </AvatarFallback>
               </AvatarUI>
               <div className="min-w-0">
                 <div className="font-medium truncate">
-                  {friend.username || t('friends.list.unknownUser')}
+                  {friend.username || t("friends.list.unknownUser")}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {t('friends.list.streakCount', { count: friend.current_streak })}
+                  {t("friends.list.streakCount", {
+                    count: friend.current_streak,
+                  })}
                 </div>
               </div>
             </li>

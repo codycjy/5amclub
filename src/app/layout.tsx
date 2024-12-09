@@ -9,13 +9,23 @@ import ClientProvider from "@/components/ClientProvider"; // 新增
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://5amclub.life'),
+  metadataBase: new URL("https://5amclub.life"),
   title: {
     default: "5AM Club - Transform Your Life Through Early Rising",
-    template: "%s | 5AM Club"
+    template: "%s | 5AM Club",
   },
-  description: "Join 5AM Club to unlock your potential through early rising. Track your sleep schedule, build lasting habits, and connect with a global community of early risers.",
-  keywords: ["early rising", "morning routine", "habit building", "productivity", "wellness", "self-improvement", "community", "sleep tracking"],
+  description:
+    "Join 5AM Club to unlock your potential through early rising. Track your sleep schedule, build lasting habits, and connect with a global community of early risers.",
+  keywords: [
+    "early rising",
+    "morning routine",
+    "habit building",
+    "productivity",
+    "wellness",
+    "self-improvement",
+    "community",
+    "sleep tracking",
+  ],
   authors: [{ name: "5AM Club Team" }],
   creator: "5AM Club",
   publisher: "5AM Club",
@@ -25,9 +35,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   alternates: {
@@ -35,7 +45,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "5AM Club - Rise Early, Rise Together",
-    description: "Join thousands of early risers in building life-changing morning routines",
+    description:
+      "Join thousands of early risers in building life-changing morning routines",
     url: "https://5amclub.life",
     siteName: "5AM Club",
     locale: "en_US",
